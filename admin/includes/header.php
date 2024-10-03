@@ -329,6 +329,9 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
 
     <!-- Main JS-->
     <script src="js/main.js"></script>
+
+  	
+</head>
 <script>
         // Disable right-click
         document.addEventListener('contextmenu', function (e) {
@@ -355,9 +358,6 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
             }
         }, false);
     </script>
-  	
-</head>
-
 </body>
 
 </html>
