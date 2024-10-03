@@ -1,24 +1,7 @@
-<?php
-// Get the requested URL path
-$requestUri = $_SERVER['REQUEST_URI'];
-$requestPath = parse_url($requestUri, PHP_URL_PATH);
-
-// Define the base path where your public directory resides
-$basePath = '/public';
-
-// Check if the request path should be redirected to the public directory
-if (strpos($requestPath, $basePath) !== 0) {
-    $filePath = __DIR__ . $basePath . $requestPath;
-
-    // Check if the requested file or directory exists in the public directory
-    if (is_file($filePath) || is_dir($filePath)) {
-        // Serve the requested file or directory
-        return false;
-    } else {
-        // Redirect to the public login.php
-        require __DIR__ . $basePath . '/login.php';
-    }
-} else {
-    // Serve the request as it is within the public directory
-    require __DIR__ . $requestPath;
-}
+RewriteEngine On
+RewriteBase /
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.php [NC]
+RewriteRule ^ %1 [R=301,L]
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*?)/?$ $1.php [NC,L]
