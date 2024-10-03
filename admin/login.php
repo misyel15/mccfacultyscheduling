@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['username'] = $user_data['username'];
         $_SESSION['name'] = $user_data['name'];
         $_SESSION['login_type'] = $user_data['type']; // Store user type for permission checks
-       
+        
         // Additional check for user type (if not type 1, clear session and return error)
         if ($_SESSION['login_type'] != 1) {
             session_unset(); // Clear all session data
@@ -80,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Include SweetAlert CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
 </head>
+
 <style>
 .password-container {
     position: relative;
@@ -213,40 +214,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         title: 'Oops...',
                         text: 'Something went wrong. Please try again later.'
                     });
-                    $('#login-form button[type="submit"]').removeAttr('disabled').html('sign in');
+                    $('#login-form button[type="submit"]').removeAttr('disabled').html('Login');
                 },
                 success: function(resp) {
                     if (resp == 1) {
                         // Display SweetAlert success message
                         Swal.fire({
                             icon: 'success',
-                            title: 'Success',
-                            text: 'Login successful. Redirecting...',
+                            title: 'Login Successful',
+                            text: 'Redirecting...',
                             showConfirmButton: true
                         }).then(() => {
-                            location.href = 'home.php';
+                            location.href = 'home.php'; // Redirect to the homepage
                         });
                     } else if (resp == 2) {
-                        // Display SweetAlert error message for user type
+                        // Display SweetAlert for access denied
                         Swal.fire({
                             icon: 'error',
                             title: 'Access Denied',
                             text: 'You do not have permission to access this area.'
                         });
-                        $('#login-form button[type="submit"]').removeAttr('disabled').html('sign in');
+                        $('#login-form button[type="submit"]').removeAttr('disabled').html('Login');
                     } else {
-                        // Display SweetAlert error message for incorrect login
+                        // Display SweetAlert for login failure
                         Swal.fire({
                             icon: 'error',
                             title: 'Login Failed',
                             text: 'Username or password is incorrect.'
                         });
-                        $('#login-form button[type="submit"]').removeAttr('disabled').html('sign in');
+                        $('#login-form button[type="submit"]').removeAttr('disabled').html('Login');
                     }
                 }
             });
         });
     });
+    </script>
+
+    <!-- Anti-inspect JavaScript -->
+    <script>
+    // Disable right-click
+    document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+    }, false);
+
+    // Disable F12 (Inspect Element) and Ctrl+Shift+I
+    document.addEventListener('keydown', function (e) {
+        // F12
+        if (e.keyCode === 123) {
+            e.preventDefault();
+        }
+        // Ctrl + Shift + I
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+            e.preventDefault();
+        }
+    }, false);
+
+    // Disable Ctrl+U (View Source)
+    document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.keyCode === 85) {
+            e.preventDefault();
+        }
+    }, false);
     </script>
 </body>
 </html>
