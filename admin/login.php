@@ -1,12 +1,11 @@
 <?php
-session_start(); // Start the session
+session_start();
 include 'db_connect.php'; 
 
-// Check if the form was submitted via AJAX
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Extract the posted values
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    // Sanitize user input to prevent XSS attacks
+    $username = htmlspecialchars(trim($_POST['username']));
+    $password = htmlspecialchars(trim($_POST['password']));
 
     // Prepare and execute the login query
     $stmt = $conn->prepare("
@@ -25,13 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Store only necessary user information in the session
         $_SESSION['user_id'] = $user_data['id'];
         $_SESSION['dept_id'] = $user_data['dept_id'];
-        $_SESSION['username'] = $user_data['username'];
-        $_SESSION['name'] = $user_data['name'];
-        $_SESSION['login_type'] = $user_data['type']; // Store user type for permission checks
-        
-        // Additional check for user type (if not type 1, clear session and return error)
+        $_SESSION['username'] = htmlspecialchars($user_data['username']); // Prevent XSS when outputting username
+        $_SESSION['name'] = htmlspecialchars($user_data['name']); // Prevent XSS when outputting name
+        $_SESSION['login_type'] = $user_data['type'];
+
         if ($_SESSION['login_type'] != 1) {
-            session_unset(); // Clear all session data
+            session_unset();
             echo 2; // User is not allowed
         } else {
             echo 1; // Successful login
@@ -39,9 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         echo 3; // Invalid username/password
     }
-    exit; // Exit after handling the AJAX request
+    exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
