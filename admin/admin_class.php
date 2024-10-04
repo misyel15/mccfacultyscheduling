@@ -309,30 +309,34 @@ class Action {
 	}
 	function save_room() {
 		extract($_POST);
-		$data = " room_name = '$room' ";
-		$data .= ", room_id = '$room_id' ";
-	
+		
+		// Validate and sanitize input
+		$room = $conn->real_escape_string($room);
+		$room_id = $conn->real_escape_string($room_id);
+		
 		// Ensure dept_id is extracted from the session
 		$dept_id = $_SESSION['dept_id']; // Retrieve dept_id from session
-		$data .= ", dept_id = '$dept_id' "; // Add dept_id to the data string
-	
+		
 		// Check for duplicate room name or ID within the same department
-		$check = $this->db->query("SELECT * FROM roomlist WHERE (room_name = '$room' OR room_id = '$room_id') AND dept_id = '$dept_id'");
+		$check = $conn->query("SELECT * FROM roomlist WHERE (room_name = '$room' OR room_id = '$room_id') AND dept_id = '$dept_id'");
 		if ($check->num_rows > 0) {
 			return 3; // Return a specific code for duplicate entry
 		}
-	
+		
+		$data = "room_name = '$room', room_id = '$room_id', dept_id = '$dept_id'";
+		
 		if (empty($id)) {
-			$save = $this->db->query("INSERT INTO roomlist SET $data");
+			$save = $conn->query("INSERT INTO roomlist SET $data");
 		} else {
-			$save = $this->db->query("UPDATE roomlist SET $data WHERE id = $id");
+			$save = $conn->query("UPDATE roomlist SET $data WHERE id = $id");
 		}
-	
+		
 		if ($save) {
-			return 1; // Return 1 for successful save
+			return empty($id) ? 1 : 2; // Return 1 for new insert, 2 for update
 		}
 		return 0; // Return 0 if the save operation fails
 	}
+	
 	
 	function save_timeslot() {
 		extract($_POST);
