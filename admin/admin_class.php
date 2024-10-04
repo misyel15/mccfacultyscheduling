@@ -209,40 +209,59 @@ class Action {
 				}
 	}
 	function save_course() {
-		extract($_POST);
-		
-		// Ensure that $dept_id, $course, and $description are properly set
-		$data = "dept_id = '$dept_id', "; // Start with dept_id
-		$data .= "course = '$course', "; // Append course
-		$data .= "description = '$description' "; // Append description
-	
-		// Check for duplicate course
-		$check_duplicate = $this->db->query("SELECT * FROM courses WHERE course = '$course' AND id != '$id'");
-		if ($check_duplicate->num_rows > 0) {
-			// Duplicate course found, return error
-			return 0;
-		}
-		
-		// Check if the ID is empty to determine whether to insert or update
-		if (empty($id)) {
-			// Insert new course
-			$save = $this->db->query("INSERT INTO courses SET $data");
-		} else {
-			// Update existing course
-			$save = $this->db->query("UPDATE courses SET $data WHERE id = $id");
-		}
-	
-		// Return success status
-		return $save ? 1 : 2; // Return 2 in case of failure
-	}
-	
-	function delete_course(){
-		extract($_POST);
-		$delete = $this->db->query("DELETE FROM courses where id = ".$id);
-		if($delete){
-			return 1;
-		}
-	}
+    // Use prepared statements to prevent SQL injection
+    $stmt = $this->db->prepare("INSERT INTO courses (dept_id, course, description) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE dept_id = ?, description = ?");
+    
+    // Ensure that the necessary variables are properly set
+    if (empty($dept_id) || empty($course) || empty($description)) {
+        return 0; // Invalid input
+    }
+    
+    // Check for duplicate course
+    $check_duplicate = $this->db->prepare("SELECT * FROM courses WHERE course = ? AND id != ?");
+    $check_duplicate->bind_param("si", $course, $id);
+    $check_duplicate->execute();
+    $result = $check_duplicate->get_result();
+
+    if ($result->num_rows > 0) {
+        return 0; // Duplicate course found
+    }
+
+    // Set parameters for insert/update
+    $data = [$dept_id, $course, $description, $dept_id, $description];
+
+    if (empty($id)) {
+        // Execute insert
+        $save = $stmt->execute($data);
+    } else {
+        // Prepare update statement
+        $stmt = $this->db->prepare("UPDATE courses SET dept_id = ?, course = ?, description = ? WHERE id = ?");
+        $data[] = $id; // Add ID for update
+        $save = $stmt->execute($data);
+    }
+
+    // Return success status
+    return $save ? 1 : 2; // Return 2 in case of failure
+}
+
+function delete_course() {
+    extract($_POST);
+    
+    if (empty($id)) {
+        return 0; // Invalid input
+    }
+
+    // Use prepared statements to prevent SQL injection
+    $stmt = $this->db->prepare("DELETE FROM courses WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    
+    if ($stmt->execute()) {
+        return 1; // Successfully deleted
+    } else {
+        return 2; // Failed to delete
+    }
+}
+
 	function save_subject() {
 		extract($_POST);
 		// Assuming the dept_id is stored in the session
