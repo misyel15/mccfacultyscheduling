@@ -156,8 +156,7 @@ $('#manage-timeslot').submit(function(e) {
     }
     
     $.ajax({
-     url: '/admin/ajax.php?action=save_timeslot',
-
+        url: 'ajax.php?action=save_timeslot',
         data: new FormData($(this)[0]),
         cache: false,
         contentType: false,
@@ -197,16 +196,29 @@ $('.edit_timeslot').click(function() {
     $('#timeslotModal').modal('show');
 });
 
-function delete_timeslot(id) {
-    console.log("Attempting to delete timeslot with ID:", id); // Add logging for debugging
+$('.delete_timeslot').click(function() {
+    var id = $(this).data('id');
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            delete_timeslot(id);
+        }
+    });
+});
 
+function delete_timeslot(id) {
     $.ajax({
         url: 'ajax.php?action=delete_timeslot',
         method: 'POST',
         data: { id: id },
         success: function(resp) {
-            console.log("Server response:", resp); // Log server response
-
             if (resp == 1) {
                 Swal.fire({
                     icon: 'success',
@@ -217,27 +229,10 @@ function delete_timeslot(id) {
                 setTimeout(function() {
                     location.reload();
                 }, 1500);
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Unable to delete data',
-                    showConfirmButton: true,
-                });
             }
-        },
-        error: function(xhr, status, error) {
-            console.log("Error:", error); // Log error details
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'There was an issue connecting to the server.',
-                showConfirmButton: true,
-            });
         }
     });
 }
-
 
 $(document).ready(function() {
     $('#timeslotTable').DataTable({
