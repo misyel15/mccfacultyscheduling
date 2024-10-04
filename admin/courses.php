@@ -140,7 +140,8 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         }
 
         $.ajax({
-            url: 'ajax.php?action=save_course',
+            url: 'public/ajax.php?action=save_user'
+
             data: new FormData($(this)[0]),
             cache: false,
             contentType: false,
