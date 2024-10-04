@@ -1,4 +1,12 @@
 <?php
+session_start(); // Start the session
+include('db_connect.php');
+include 'includes/header.php';
+
+// Assuming the user department ID is stored in the session after login
+$dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
+?>
+<?php
 session_start();
 ini_set('display_errors', 1);
 
