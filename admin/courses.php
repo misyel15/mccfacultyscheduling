@@ -4,8 +4,12 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
-// Example: $_SESSION['dept_id'] = $user['dept_id'];
-$dept_id = $_SESSION['dept_id']; // Get the department ID from the session
+$dept_id = $_SESSION['dept_id'] ?? null; // Get the department ID from the session
+
+// Check if dept_id is set
+if (!$dept_id) {
+    echo "<script>alert('Department ID is not set. Please log in again.');</script>";
+}
 ?>
 
 <!-- Include SweetAlert CSS -->
@@ -31,7 +35,9 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     <div class="card-header">
                         <b>Course List</b>
                         <span class="">
-                        <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#courseModal"><i class="fa fa-user-plus"></i> New Entry</button>
+                        <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#courseModal" onclick="_reset();">
+                            <i class="fa fa-user-plus"></i> New Entry
+                        </button>
                         </span>
                     </div>
                     <div class="card-body">
@@ -74,7 +80,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             </div>
             <!-- Table Panel -->
 
-            <!-- Modal -->
+            <!-- Modal for New Entry -->
             <div class="modal fade" id="courseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -87,7 +93,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         <form action="" id="manage-course">
                             <div class="modal-body">
                                 <input type="hidden" name="id">
-                                <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
+                                <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>"> <!-- Auto-set dept_id -->
                                 <div class="form-group">
                                     <label class="control-label">Course</label>
                                     <input type="text" class="form-control" name="course" required>
@@ -118,63 +124,70 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 
 <script>
     function _reset() {
-  $('#manage-course').submit(function(e) {
-    e.preventDefault(); // Prevent default form submission
-
-    // Validate required fields
-    let course = $("input[name='course']").val().trim();
-    let description = $("textarea[name='description']").val().trim();
-
-    if (course === '' || description === '') {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Warning!',
-            text: 'Please fill out all required fields.',
-            showConfirmButton: true
-        });
-        return; // Stop the form submission if validation fails
+        $('#manage-course').get(0).reset();
+        $('#manage-course input,#manage-course textarea').val('');
+        
+        // Set dept_id in the modal
+        $("input[name='dept_id']").val('<?php echo $dept_id; ?>'); // Ensure dept_id is set in the form
     }
 
-    // Create FormData object for AJAX request
-    let formData = new FormData(this);
+    $('#manage-course').submit(function(e) {
+        e.preventDefault();
 
-    // Send AJAX request to the server
-    $.ajax({
-        url: 'ajax.php?action=save_course',  // URL of the server-side script
-        type: 'POST',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function(response) {
-            if (response == 1) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Data successfully added!',
-                    showConfirmButton: true
-                }).then(function() {
-                    location.reload();
-                });
-            } else if (response == 2) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Data successfully updated!',
-                    showConfirmButton: true
-                }).then(function() {
-                    location.reload();
-                });
-            } else if (response == 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Course already exists!',
-                    showConfirmButton: true
-                });
-            }
+        // Log dept_id to see if it's set correctly
+        console.log("Department ID:", $("input[name='dept_id']").val());
+
+        // Validation: Check if required fields are filled
+        let course = $("input[name='course']").val().trim();
+        let description = $("textarea[name='description']").val().trim();
+
+        if (course === '' || description === '') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: 'Please fill out all required fields.',
+                showConfirmButton: true
+            });
+            return; // Stop the form submission if validation fails
         }
+
+        $.ajax({
+            url: 'ajax.php?action=save_course',
+            data: new FormData($(this)[0]),
+            cache: false,
+            contentType: false,
+            processData: false,
+            method: 'POST',
+            success: function(resp) {
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Data successfully added!',
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload();
+                    });
+                } else if (resp == 2) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Data successfully updated!',
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload();
+                    });
+                } else if (resp == 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Course already exists!',
+                        showConfirmButton: true
+                    });
+                }
+            }
+        });
     });
-});
 
     $('.edit_course').click(function() {
         _reset();
