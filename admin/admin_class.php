@@ -209,54 +209,32 @@ class Action {
 				}
 	}
 	function save_course() {
-    // Ensure that POST variables are set and properly sanitized
-    $dept_id = isset($_POST['dept_id']) ? intval($_POST['dept_id']) : null;
-    $course = isset($_POST['course']) ? trim($_POST['course']) : '';
-    $description = isset($_POST['description']) ? trim($_POST['description']) : '';
-    $id = isset($_POST['id']) ? intval($_POST['id']) : null;
-
-    // Check for empty fields
-    if (empty($dept_id) || empty($course) || empty($description)) {
-        return 0; // Return error if required fields are empty
-    }
-
-    // Prepare the data to avoid SQL injection
-    $data = [
-        'dept_id' => $dept_id,
-        'course' => $course,
-        'description' => $description,
-    ];
-
-    // Check for duplicate course
-    $stmt = $this->db->prepare("SELECT * FROM courses WHERE course = ? AND id != ?");
-    $stmt->bind_param("si", $course, $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        // Duplicate course found, return error
-        return 0;
-    }
-
-    // Check if the ID is empty to determine whether to insert or update
-    if (empty($id)) {
-        // Insert new course
-        $stmt = $this->db->prepare("INSERT INTO courses (dept_id, course, description) VALUES (?, ?, ?)");
-        $stmt->bind_param("iss", $dept_id, $course, $description);
-    } else {
-        // Update existing course
-        $stmt = $this->db->prepare("UPDATE courses SET dept_id = ?, course = ?, description = ? WHERE id = ?");
-        $stmt->bind_param("issi", $dept_id, $course, $description, $id);
-    }
-
-    // Execute the query and return success status
-    if ($stmt->execute()) {
-        return 1; // Success
-    } else {
-        return 2; // Failure
-    }
-}
-
+		extract($_POST);
+		
+		// Ensure that $dept_id, $course, and $description are properly set
+		$data = "dept_id = '$dept_id', "; // Start with dept_id
+		$data .= "course = '$course', "; // Append course
+		$data .= "description = '$description' "; // Append description
+	
+		// Check for duplicate course
+		$check_duplicate = $this->db->query("SELECT * FROM courses WHERE course = '$course' AND id != '$id'");
+		if ($check_duplicate->num_rows > 0) {
+			// Duplicate course found, return error
+			return 0;
+		}
+		
+		// Check if the ID is empty to determine whether to insert or update
+		if (empty($id)) {
+			// Insert new course
+			$save = $this->db->query("INSERT INTO courses SET $data");
+		} else {
+			// Update existing course
+			$save = $this->db->query("UPDATE courses SET $data WHERE id = $id");
+		}
+	
+		// Return success status
+		return $save ? 1 : 2; // Return 2 in case of failure
+	}
 	
 	function delete_course(){
 		extract($_POST);
