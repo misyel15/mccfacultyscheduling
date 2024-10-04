@@ -117,6 +117,10 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 </style>
 
 <script>
+    function _reset() {
+        $('#manage-course').get(0).reset();
+        $('#manage-course input,#manage-course textarea').val('');
+    }
     $('#manage-course').submit(function(e) {
     e.preventDefault();
 
@@ -180,7 +184,6 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         }
     });
 });
-
 
     $('.edit_course').click(function() {
         _reset();
