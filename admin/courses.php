@@ -154,6 +154,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </style>
 
 <script>
+$(document).ready(function() {
+    // Reset form and initialize DataTable
     function _reset() {
         $('#manage-course').get(0).reset();
         $('#manage-course input, #manage-course textarea').val('');
@@ -167,6 +169,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         cat.find("[name='course']").val($(this).attr('data-course'));
         cat.find("[name='description']").val($(this).attr('data-description'));
         $("input[name='action']").val('edit_course'); // Set action to edit
+    });
+
+    $('#manage-course').on('submit', function(e) {
+        e.preventDefault(); // Prevent form submission
+
+        $.ajax({
+            url: '', // Your PHP file here
+            method: 'POST',
+            data: $(this).serialize(), // Serialize form data
+            dataType: 'json', // Expect JSON response
+            success: function(resp) {
+                if (resp.status == 1 || resp.status == 2) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: resp.message,
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload(); // Reload the page to see updated data
+                    });
+                } else if (resp.status == 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: resp.message,
+                        showConfirmButton: true
+                    });
+                }
+            }
+        });
     });
 
     $('.delete_course').click(function() {
@@ -187,20 +219,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
 
     function delete_course(id) {
-        // Use form submission for delete action
         $.ajax({
-            url: '',
+            url: '', // Your PHP file here
             method: 'POST',
             data: { action: 'delete_course', id: id },
+            dataType: 'json',
             success: function(resp) {
-                if (resp == 1) {
+                if (resp.status == 1) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Deleted!',
-                        text: 'Data successfully deleted.',
+                        text: resp.message,
                         showConfirmButton: true
                     }).then(function() {
-                        location.reload();
+                        location.reload(); // Reload the page to see updated data
                     });
                 }
             }
@@ -208,12 +240,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Initialize DataTable
-    $(document).ready(function() {
-        $('#course-table').DataTable({
-            "paging": true,
-            "searching": true,
-            "ordering": true,
-            "info": true
-        });
+    $('#course-table').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "info": true
     });
+});
+
 </script>
