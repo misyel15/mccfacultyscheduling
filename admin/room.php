@@ -5,58 +5,8 @@ include 'includes/header.php';
 
 // Assuming the user department ID is stored in the session after login
 $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
-
-// Handle form submission
-$message = ''; // Initialize message variable
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action'])) {
-        // Save Room
-        if ($_POST['action'] === 'save_room') {
-            $room_id = $_POST['room_id'];
-            $room_name = $_POST['room'];
-
-            // Check if room already exists
-            $checkQuery = $conn->query("SELECT * FROM roomlist WHERE room_id = '$room_id' OR room_name = '$room_name' AND dept_id = '$dept_id'");
-            if ($checkQuery->num_rows > 0) {
-                $message = "Room already exists"; // Store error message
-            } else {
-                // Insert new room
-                if ($conn->query("INSERT INTO roomlist (room_id, room_name, dept_id) VALUES ('$room_id', '$room_name', '$dept_id')")) {
-                    $message = "Room successfully added"; // Store success message
-                } else {
-                    $message = "Error: " . $conn->error; // Store error message
-                }
-            }
-        }
-
-        // Update Room
-        if ($_POST['action'] === 'update_room') {
-            $id = $_POST['id'];
-            $room_id = $_POST['room_id'];
-            $room_name = $_POST['room'];
-
-            if ($conn->query("UPDATE roomlist SET room_id = '$room_id', room_name = '$room_name' WHERE id = '$id'")) {
-                $message = "Room successfully updated"; // Store success message
-            } else {
-                $message = "Error: " . $conn->error; // Store error message
-            }
-        }
-
-        // Delete Room
-        if ($_POST['action'] === 'delete_room') {
-            $id = $_POST['id'];
-            if ($conn->query("DELETE FROM roomlist WHERE id = '$id'")) {
-                $message = "Room successfully deleted"; // Store success message
-            } else {
-                $message = "Error: " . $conn->error; // Store error message
-            }
-        }
-    }
-}
-
-// Fetch room list after form submission
-$rooms = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' ORDER BY id ASC");
 ?>
+
 
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -79,35 +29,35 @@ $rooms = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' ORDER B
     <div class="row">
         <!-- FORM Panel -->
         <div class="col-md-4">
-            <!-- Modal -->
-            <div class="modal fade" id="roomModal" tabindex="-1" aria-labelledby="roomModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="roomModalLabel">Room Form</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form action="" id="manage-room">
-                                <input type="hidden" name="id">
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Room ID</label>
-                                    <input type="text" class="form-control" name="room_id" id="room_id">
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Room</label>
-                                    <input type="text" class="form-control" name="room" id="room">
-                                </div>
-                                <input type="hidden" name="action" value="save_room">
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" id="saveRoomBtn">Save</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
-                </div>
+        <!-- Modal -->
+<div class="modal fade" id="roomModal" tabindex="-1" aria-labelledby="roomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="roomModalLabel">Room Form</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <div class="modal-body">
+                <form action="" id="manage-room">
+                    <input type="hidden" name="id">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Room ID</label>
+                        <input type="text" class="form-control" name="room_id" id="room_id">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Room</label>
+                        <input type="text" class="form-control" name="room" id="room">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="saveRoomBtn">Save</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+        </div>
+    </div>
+</div>
+
             <!-- Modal -->
         </div>
         <!-- FORM Panel -->
@@ -131,7 +81,10 @@ $rooms = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' ORDER B
                             </thead>
                             <tbody>
                             <?php 
-                                while($row = $rooms->fetch_assoc()): ?>
+                                    $i = 1;
+                                    $course = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' ORDER BY id ASC");
+                                    while($row = $course->fetch_assoc()):
+                                    ?>
                                 <tr>
                                     <td class="text-center"><?php echo $row['room_id']; ?></td>
                                     <td>
@@ -162,10 +115,14 @@ $(document).ready(function() {
 
     // Show the modal when clicking the "New Entry" button
     $('#newEntryBtn').click(function() {
-        $('#manage-room').get(0).reset();
-        $('#manage-room input[name="action"]').val('save_room');
         $('#roomModal').modal('show');
     });
+
+    // Reset form function
+    function _reset() {
+        $('#manage-room').get(0).reset();
+        $('#manage-room input').val('');
+    }
 
     // Save Room
     $('#saveRoomBtn').click(function() {
@@ -189,7 +146,10 @@ $(document).ready(function() {
 
         $.ajax({
             url: 'ajax.php?action=save_room',
-            data: $(this).serialize(),
+            data: new FormData($(this)[0]),
+            cache: false,
+            contentType: false,
+            processData: false,
             method: 'POST',
             success: function(resp) {
                 if (resp == 1) {
@@ -225,20 +185,19 @@ $(document).ready(function() {
     // Edit Room
     $('.edit_room').click(function() {
         var cat = $('#manage-room');
-        cat[0].reset();
-        cat.find('input[name="action"]').val('update_room');
-        cat.find('input[name="id"]').val($(this).attr('data-id'));
-        cat.find('input[name="room_id"]').val($(this).attr('data-room_id'));
-        cat.find('input[name="room"]').val($(this).attr('data-room'));
+        cat.get(0).reset();
+        cat.find("[name='id']").val($(this).attr('data-id'));
+        cat.find("[name='room']").val($(this).attr('data-room'));
+        cat.find("[name='room_id']").val($(this).attr('data-room_id'));
         $('#roomModal').modal('show');
     });
 
     // Delete Room
     $('.delete_room').click(function() {
-        const id = $(this).attr('data-id');
+        var id = $(this).attr('data-id');
         Swal.fire({
             title: 'Are you sure?',
-            text: "You won't be able to revert this!",
+            text: 'You will not be able to recover this data!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -246,43 +205,29 @@ $(document).ready(function() {
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                $.ajax({
-                    url: 'ajax.php?action=delete_room',
-                    method: 'POST',
-                    data: { id: id },
-                    success: function(resp) {
-                        if (resp) {
-                            Swal.fire(
-                                'Deleted!',
-                                'Your room has been deleted.',
-                                'success'
-                            ).then(function() {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire(
-                                'Error!',
-                                'Failed to delete the room.',
-                                'error'
-                            );
-                        }
-                    }
-                });
+                delete_room(id);
             }
         });
     });
+
+    function delete_room(id) {
+        $.ajax({
+            url: 'ajax.php?action=delete_room',
+            method: 'POST',
+            data: { id: id },
+            success: function(resp) {
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Room data successfully deleted.',
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload();
+                    });
+                }
+            }
+        });
+    }
 });
 </script>
-
-<?php if (isset($message)): ?>
-<script>
-    Swal.fire({
-        icon: '<?php echo (strpos($message, 'success') !== false) ? 'success' : 'error'; ?>',
-        title: '<?php echo (strpos($message, 'success') !== false) ? 'Success!' : 'Error!'; ?>',
-        text: '<?php echo $message; ?>',
-        confirmButtonText: 'OK'
-    });
-</script>
-<?php endif; ?>
-
-
