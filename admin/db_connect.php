@@ -1,20 +1,16 @@
 <?php
-// Enable error reporting for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 // Database connection parameters
-$host = 'localhost'; // Change as needed
+$host = '127.0.0.1:3306';
 $username = 'u510162695_scheduling_db';
-$password = '1Scheduling_db';
-$database = 'u510162695_scheduling_db';
-$port = 3307; // Change if necessary
+$password = '1Scheduling_db'; // Ensure to set a proper password here
+$dbname = 'u510162695_scheduling_db';
 
-// Create a new MySQLi object
-$conn = new mysqli($host, $username, $password, $database, $port);
+// Create connection
+$conn = new mysqli($host, $username, $password, $dbname,);
 
-// Check if the connection was successful
+// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
+echo "Connected successfully";
