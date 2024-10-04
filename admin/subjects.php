@@ -12,6 +12,7 @@ function sanitize($input) {
 // CRUD Operations
 if(isset($_POST['action'])) {
     $action = $_POST['action'];
+    $response = ['status' => 'error', 'message' => 'Unknown error occurred'];
     
     switch($action) {
         case 'create':
@@ -32,6 +33,7 @@ if(isset($_POST['action'])) {
             if($action == 'create') {
                 $sql = "INSERT INTO subjects (subject, description, total_units, Lec_Units, Lab_Units, hours, course, year, semester, specialization, dept_id) 
                         VALUES ('$subject', '$description', '$total_units', '$lec_units', '$lab_units', '$hours', '$course', '$year', '$semester', '$specialization', '$dept_id')";
+                $message = 'Subject has been created successfully.';
             } else {
                 $sql = "UPDATE subjects SET 
                         subject = '$subject', 
@@ -45,42 +47,44 @@ if(isset($_POST['action'])) {
                         semester = '$semester', 
                         specialization = '$specialization' 
                         WHERE id = '$id'";
+                $message = 'Subject has been updated successfully.';
             }
 
             if($conn->query($sql)){
-                echo 'success';
+                $response = ['status' => 'success', 'message' => $message];
             } else {
-                echo "Error: " . $conn->error;
+                $response = ['status' => 'error', 'message' => "Error: " . $conn->error];
             }
-            exit;
+            break;
 
         case 'delete':
             $id = sanitize($_POST['id']);
             $sql = "DELETE FROM subjects WHERE id = '$id'";
             if($conn->query($sql)){
-                echo 'success';
+                $response = ['status' => 'success', 'message' => 'Subject has been deleted successfully.'];
             } else {
-                echo "Error: " . $conn->error;
+                $response = ['status' => 'error', 'message' => "Error: " . $conn->error];
             }
-            exit;
+            break;
 
         case 'read':
             $id = sanitize($_POST['id']);
             $sql = "SELECT * FROM subjects WHERE id = '$id'";
             $result = $conn->query($sql);
             if($result->num_rows > 0){
-                echo json_encode($result->fetch_assoc());
+                $response = ['status' => 'success', 'data' => $result->fetch_assoc()];
             } else {
-                echo "No data found";
+                $response = ['status' => 'error', 'message' => 'No data found'];
             }
-            exit;
+            break;
     }
+    
+    echo json_encode($response);
+    exit;
 }
 
-// Assuming the user department ID is stored in the session after login
-$dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
+// ... rest of your PHP code ...
 ?>
-
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <!-- Include DataTables CSS -->
@@ -264,54 +268,72 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
 </div>
 <script>
 $(document).ready(function() {
-    $('#subjectTable').DataTable();
+    var table = $('#subjectTable').DataTable();
+
+    // Function to reset modal form
+    function resetForm() {
+        $('#manage-subject')[0].reset();
+        $('input[name="id"]').val('');
+    }
 
     // Handle form submission (Create and Update)
     $('#manage-subject').submit(function(e) {
         e.preventDefault();
-        const formData = $(this).serialize();
-        const action = $('input[name="id"]').val() ? 'update' : 'create';
+        var formData = $(this).serialize();
+        var action = $('input[name="id"]').val() ? 'update' : 'create';
         
         $.ajax({
-            url: '',
+            url: window.location.href,
             method: 'POST',
             data: formData + '&action=' + action,
+            dataType: 'json',
             success: function(response) {
-                if (response == 'success') {
-                    Swal.fire('Success!', 'Subject has been saved.', 'success');
-                    $('#subjectModal').modal('hide');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
+                if (response.status == 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message,
+                    }).then((result) => {
+                        $('#subjectModal').modal('hide');
+                        table.ajax.reload();
+                    });
                 } else {
-                    Swal.fire('Error!', response, 'error');
+                    Swal.fire('Error!', response.message, 'error');
                 }
+            },
+            error: function(xhr, status, error) {
+                Swal.fire('Error!', 'An error occurred while processing your request.', 'error');
             }
         });
     });
 
     // Edit button click event (Read)
-    $('.edit_subject').click(function() {
-        const id = $(this).data('id');
+    $(document).on('click', '.edit_subject', function() {
+        var id = $(this).data('id');
         $.ajax({
-            url: '',
+            url: window.location.href,
             method: 'POST',
             data: { action: 'read', id: id },
             dataType: 'json',
             success: function(data) {
-                $('#subjectModal input[name="id"]').val(data.id);
-                $('#subjectModal input[name="subject"]').val(data.subject);
-                $('#subjectModal textarea[name="description"]').val(data.description);
-                $('#subjectModal input[name="total_units"]').val(data.total_units);
-                $('#subjectModal input[name="Lec_Units"]').val(data.Lec_Units);
-                $('#subjectModal input[name="Lab_Units"]').val(data.Lab_Units);
-                $('#subjectModal input[name="hours"]').val(data.hours);
-                $('#subjectModal select[name="course"]').val(data.course);
-                $('#subjectModal input[name="year"]').val(data.year);
-                $('#subjectModal input[name="semester"]').val(data.semester);
-                $('#subjectModal input[name="specialization"]').val(data.specialization);
+                if (data.status == 'success') {
+                    var subject = data.data;
+                    $('#subjectModal input[name="id"]').val(subject.id);
+                    $('#subjectModal input[name="subject"]').val(subject.subject);
+                    $('#subjectModal textarea[name="description"]').val(subject.description);
+                    $('#subjectModal input[name="total_units"]').val(subject.total_units);
+                    $('#subjectModal input[name="Lec_Units"]').val(subject.Lec_Units);
+                    $('#subjectModal input[name="Lab_Units"]').val(subject.Lab_Units);
+                    $('#subjectModal input[name="hours"]').val(subject.hours);
+                    $('#subjectModal select[name="course"]').val(subject.course);
+                    $('#subjectModal input[name="year"]').val(subject.year);
+                    $('#subjectModal input[name="semester"]').val(subject.semester);
+                    $('#subjectModal input[name="specialization"]').val(subject.specialization);
 
-                $('#subjectModal').modal('show');
+                    $('#subjectModal').modal('show');
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
             },
             error: function() {
                 Swal.fire('Error!', 'Failed to fetch subject data.', 'error');
@@ -320,8 +342,8 @@ $(document).ready(function() {
     });
 
     // Delete button click event
-    $('.delete_subject').click(function() {
-        const id = $(this).data('id');
+    $(document).on('click', '.delete_subject', function() {
+        var id = $(this).data('id');
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -333,39 +355,57 @@ $(document).ready(function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '',
+                    url: window.location.href,
                     method: 'POST',
                     data: { action: 'delete', id: id },
+                    dataType: 'json',
                     success: function(response) {
-                        if (response == 'success') {
-                            Swal.fire('Deleted!', 'Subject has been deleted.', 'success');
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
+                        if (response.status == 'success') {
+                            Swal.fire('Deleted!', response.message, 'success');
+                            table.ajax.reload();
                         } else {
-                            Swal.fire('Error!', response, 'error');
+                            Swal.fire('Error!', response.message, 'error');
                         }
+                    },
+                    error: function() {
+                        Swal.fire('Error!', 'An error occurred while deleting the subject.', 'error');
                     }
                 });
             }
         });
     });
 
+    // Reset form when modal is closed
+    $('#subjectModal').on('hidden.bs.modal', function () {
+        resetForm();
+    });
+
+    // New Entry button click event
+    $('.btn-new-entry').click(function() {
+        resetForm();
+        $('#subjectModal').modal('show');
+    });
+
     // Filter functionality
     $('#filter-course, #filter-semester').change(function() {
-        const course = $('#filter-course').val();
-        const semester = $('#filter-semester').val();
-
-        $('.subject-row').each(function() {
-            const rowCourse = $(this).data('course');
-            const rowSemester = $(this).data('semester');
-            
-            if ((course === '' || course === rowCourse) && (semester === '' || semester === rowSemester)) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        });
+        table.draw();
     });
+
+    // Custom filtering function
+    $.fn.dataTable.ext.search.push(
+        function( settings, data, dataIndex ) {
+            var course = $('#filter-course').val();
+            var semester = $('#filter-semester').val();
+            var rowCourse = data[1]; // Assuming course is in the second column
+            var rowSemester = data[2]; // Assuming semester is in the third column
+
+            if ((course === "" || rowCourse.includes(course)) &&
+                (semester === "" || rowSemester.includes(semester)))
+            {
+                return true;
+            }
+            return false;
+        }
+    );
 });
 </script>
