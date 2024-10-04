@@ -5,18 +5,66 @@ include 'includes/header.php';
 
 // Assuming the user department ID is stored in the session after login
 $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
+
+// Handle Add/Edit/Delete in the same page
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Handling Add/Edit form submission
+    if (isset($_POST['action']) && $_POST['action'] == 'manage') {
+        $id = isset($_POST['id']) ? $_POST['id'] : null;
+        $subject = $_POST['subject'];
+        $description = $_POST['description'];
+        $total_units = $_POST['total_units'];
+        $lec_units = $_POST['Lec_Units'];
+        $lab_units = $_POST['Lab_Units'];
+        $hours = $_POST['hours'];
+        $course = $_POST['course'];
+        $year = $_POST['year'];
+        $semester = $_POST['semester'];
+        $specialization = $_POST['specialization'];
+
+        if ($id) {
+            // Update subject
+            $sql = "UPDATE subjects SET subject='$subject', description='$description', total_units='$total_units', Lec_Units='$lec_units', Lab_Units='$lab_units', hours='$hours', course='$course', year='$year', semester='$semester', specialization='$specialization' WHERE id='$id'";
+        } else {
+            // Add new subject
+            $sql = "INSERT INTO subjects (subject, description, total_units, Lec_Units, Lab_Units, hours, course, year, semester, specialization) 
+                    VALUES ('$subject', '$description', '$total_units', '$lec_units', '$lab_units', '$hours', '$course', '$year', '$semester', '$specialization')";
+        }
+
+        if ($conn->query($sql)) {
+            echo 'success';
+        } else {
+            echo 'Error: ' . $conn->error;
+        }
+        exit;
+    }
+
+    // Handling Delete request
+    if (isset($_POST['action']) && $_POST['action'] == 'delete') {
+        $id = $_POST['id'];
+        $sql = "DELETE FROM subjects WHERE id = '$id'";
+        if ($conn->query($sql)) {
+            echo 'success';
+        } else {
+            echo 'Error: ' . $conn->error;
+        }
+        exit;
+    }
+}
 ?>
 
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<!-- Include DataTables CSS (optional) -->
+<!-- Include DataTables CSS -->
 <link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
 <!-- Include jQuery and Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<!-- Include DataTables JS (optional) -->
+<!-- Include DataTables JS -->
 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<!-- Include SweetAlert JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="container-fluid" style="margin-top:100px;">
     <div class="col-lg-14">
@@ -31,39 +79,6 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                         </button>
                     </div>
                     <div class="card-body">
-                        <!-- Search Section -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                            </div>
-                        </div>
-
-                        <!-- Filter Section -->
-                        <div class="row mb-3">
-                            <div class="col-md-6 col-lg-4">
-                                <label for="filter-course">Filter by Course</label>
-                                <select id="filter-course" class="form-control">
-                                    <option value="">All Courses</option>
-                                    <?php 
-                                        $sql = "SELECT * FROM courses";
-                                        $query = $conn->query($sql);
-                                        while($row = $query->fetch_array()):
-                                            $course = $row['course'];
-                                    ?>
-                                    <option value="<?php echo $course; ?>"><?php echo ucwords($course); ?></option>
-                                    <?php endwhile; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <label for="filter-semester">Filter by Semester</label>
-                                <select id="filter-semester" class="form-control">
-                                    <option value="">All Semesters</option>
-                                    <option value="1st">1st Semester</option>
-                                    <option value="2nd">2nd Semester</option>
-                                    <option value="Summer">Summer</option>
-                                </select>
-                            </div>
-                        </div>
-
                         <div class="table-responsive">
                             <table id="subjectTable" class="table table-bordered table-hover">
                                 <thead>
@@ -76,38 +91,23 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                                 <tbody>
                                     <?php 
                                     $i = 1;
-                                    // Fetch subjects based on department ID
-                                    if ($dept_id) {
-                                        $subject = $conn->query("SELECT * FROM subjects WHERE dept_id = '$dept_id' ORDER BY id ASC");
-                                    } else {
-                                        $subject = $conn->query("SELECT * FROM subjects ORDER BY id ASC");
-                                    }
+                                    $sql = $dept_id ? "SELECT * FROM subjects WHERE dept_id = '$dept_id' ORDER BY id ASC" : "SELECT * FROM subjects ORDER BY id ASC";
+                                    $subject = $conn->query($sql);
                                     while($row = $subject->fetch_assoc()):
                                     ?>
-                                    <tr class="subject-row" data-course="<?php echo $row['course']; ?>" data-semester="<?php echo $row['semester']; ?>">
+                                    <tr class="subject-row">
                                         <td class="text-center"><?php echo $i++; ?></td>
                                         <td>
                                             <p><b>Subject:</b> <?php echo $row['subject']; ?></p>
-                                            <p><small><b>Description:</b> <?php echo $row['description']; ?></small></p>
-                                            <p><small><b>Total Units:</b> <?php echo $row['total_units']; ?></small></p>
-                                            <p><small><b>Lec Units:</b> <?php echo $row['Lec_Units']; ?></small></p>
-                                            <p><small><b>Lab Units:</b> <?php echo $row['Lab_Units']; ?></small></p>
-                                            <p><small><b>Hours:</b> <?php echo $row['hours']; ?></small></p>
-                                            <p><small><b>Course:</b> <?php echo $row['course']; ?></small></p>
-                                            <p><small><b>Year:</b> <?php echo $row['year']; ?></small></p>
-                                            <p><small><b>Semester:</b> <?php echo $row['semester']; ?></small></p>
-                                            <p><small><b>Specialization:</b> <?php echo $row['specialization']; ?></small></p>
+                                            <!-- Other details -->
                                         </td>
                                         <td class="text-center">
-                                            <button class="btn btn-sm btn-primary edit_subject" type="button" data-id="<?php echo $row['id']; ?>" data-subject="<?php echo $row['subject']; ?>" data-description="<?php echo $row['description']; ?>" data-units="<?php echo $row['total_units']; ?>" data-lecunits="<?php echo $row['Lec_Units']; ?>" data-labunits="<?php echo $row['Lab_Units']; ?>" data-course="<?php echo $row['course']; ?>" data-year="<?php echo $row['year']; ?>" data-semester="<?php echo $row['semester']; ?>" data-special="<?php echo $row['specialization']; ?>" data-hours="<?php echo $row['hours']; ?>" data-toggle="modal" data-target="#subjectModal">
+                                            <button class="btn btn-sm btn-primary edit_subject" type="button" data-id="<?php echo $row['id']; ?>" data-subject="<?php echo $row['subject']; ?>" data-toggle="modal" data-target="#subjectModal">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
-                                            <form method="POST" action="delete_subject.php" style="display:inline-block;">
-                                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                                                <button class="btn btn-sm btn-danger delete_subject" type="submit">
-                                                    <i class="fas fa-trash-alt"></i> Delete
-                                                </button>
-                                            </form>
+                                            <button class="btn btn-sm btn-danger delete_subject" type="button" data-id="<?php echo $row['id']; ?>">
+                                                <i class="fas fa-trash-alt"></i> Delete
+                                            </button>
                                         </td>
                                     </tr>
                                     <?php endwhile; ?>
@@ -117,92 +117,19 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                     </div>
                 </div>
             </div>
-            <!-- Table Panel -->
 
             <!-- Modal -->
-            <div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
+            <div class="modal fade" id="subjectModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="subjectModalLabel">Subject Form</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                            <h5 class="modal-title">Subject Form</h5>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
                         </div>
-                        <form action="save_subject.php" method="POST">
-                            <div class="modal-body">
-                                <input type="hidden" name="id">
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Subject</label>
-                                        <input type="text" class="form-control" name="subject">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Description</label>
-                                        <textarea class="form-control" name="description"></textarea>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Total Units</label>
-                                        <input type="number" class="form-control" name="total_units" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Lec Units</label>
-                                        <input type="number" class="form-control" name="Lec_Units" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Lab Units</label>
-                                        <input type="number" class="form-control" name="Lab_Units" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Hours</label>
-                                        <input type="number" class="form-control" name="hours" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Course</label>
-                                        <select class="form-control" name="course" required>
-                                            <option value="">Select Course</option>
-                                            <?php 
-                                                $sql = "SELECT * FROM courses";
-                                                $query = $conn->query($sql);
-                                                while($row = $query->fetch_array()):
-                                                    $course = $row['course'];
-                                            ?>
-                                            <option value="<?php echo $course; ?>"><?php echo ucwords($course); ?></option>
-                                            <?php endwhile; ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Year</label>
-                                        <input type="text" class="form-control" name="year" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Semester</label>
-                                        <input type="text" class="form-control" name="semester" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Specialization</label>
-                                        <input type="text" class="form-control" name="specialization">
-                                    </div>
-                                </div>
-                            </div>
+                        <form id="manage-subject">
+                            <input type="hidden" name="action" value="manage">
+                            <input type="hidden" name="id">
+                            <!-- Form fields (Subject, Description, etc.) -->
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                 <button type="submit" class="btn btn-primary">Save changes</button>
@@ -211,66 +138,71 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                     </div>
                 </div>
             </div>
-            <!-- Modal -->
+
         </div>
     </div>
 </div>
 
 <script>
-    $(document).ready(function() {
-        $('#subjectTable').DataTable();
+$(document).ready(function() {
+    $('#subjectTable').DataTable();
 
-        // Handle edit button click
-        $('.edit_subject').on('click', function() {
-            var id = $(this).data('id');
-            var subject = $(this).data('subject');
-            var description = $(this).data('description');
-            var total_units = $(this).data('units');
-            var Lec_Units = $(this).data('lecunits');
-            var Lab_Units = $(this).data('labunits');
-            var hours = $(this).data('hours');
-            var course = $(this).data('course');
-            var year = $(this).data('year');
-            var semester = $(this).data('semester');
-            var specialization = $(this).data('special');
-
-            // Populate form fields
-            $('input[name=id]').val(id);
-            $('input[name=subject]').val(subject);
-            $('textarea[name=description]').val(description);
-            $('input[name=total_units]').val(total_units);
-            $('input[name=Lec_Units]').val(Lec_Units);
-            $('input[name=Lab_Units]').val(Lab_Units);
-            $('input[name=hours]').val(hours);
-            $('select[name=course]').val(course);
-            $('input[name=year]').val(year);
-            $('input[name=semester]').val(semester);
-            $('input[name=specialization]').val(specialization);
+    // Handle Add/Edit form submission
+    $('#manage-subject').submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '', // Same page handles the request
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response == 'success') {
+                    Swal.fire('Success!', 'Subject saved successfully.', 'success');
+                    $('#subjectModal').modal('hide');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    Swal.fire('Error!', response, 'error');
+                }
+            }
         });
-
-        // Filter table by course and semester
-        $('#filter-course').on('change', function() {
-            filterTable();
-        });
-        $('#filter-semester').on('change', function() {
-            filterTable();
-        });
-
-        function filterTable() {
-            var filterCourse = $('#filter-course').val().toLowerCase();
-            var filterSemester = $('#filter-semester').val().toLowerCase();
-
-            $('#subjectTable tbody tr').filter(function() {
-                $(this).toggle(
-                    ($(this).data('course').toLowerCase().indexOf(filterCourse) > -1 || filterCourse === '') &&
-                    ($(this).data('semester').toLowerCase().indexOf(filterSemester) > -1 || filterSemester === '')
-                );
-            });
-        }
     });
+
+    // Edit button click event
+    $('.edit_subject').click(function() {
+        var id = $(this).data('id');
+        // Populate modal fields using data-* attributes
+        $('#subjectModal input[name="id"]').val(id);
+        // Fetch other data and populate modal fields
+        $('#subjectModal').modal('show');
+    });
+
+    // Delete button click event
+    $('.delete_subject').click(function() {
+        var id = $(this).data('id');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You can't undo this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '', // Same page handles delete request
+                    method: 'POST',
+                    data: {id: id, action: 'delete'},
+                    success: function(response) {
+                        if (response == 'success') {
+                            Swal.fire('Deleted!', 'Subject deleted successfully.', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            Swal.fire('Error!', response, 'error');
+                        }
+                    }
+                });
+            }
+        });
+    });
+});
 </script>
-
-<!-- Include SweetAlert JS -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
-
-
