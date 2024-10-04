@@ -5,6 +5,7 @@ include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
+
 // Handle form submissions for saving, updating, and deleting courses
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
@@ -18,10 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Check if the course already exists
             $check_query = $conn->query("SELECT * FROM courses WHERE course = '$course' AND dept_id = '$dept_id'");
             if ($check_query->num_rows > 0) {
-                echo json_encode(['status' => 0, 'message' => 'Course already exists']);
+                echo 0; // Course already exists
             } else {
                 $conn->query("INSERT INTO courses (course, description, dept_id) VALUES ('$course', '$description', '$dept_id')");
-                echo json_encode(['status' => 1, 'message' => 'Course successfully added']);
+                echo 1; // Course successfully added
             }
         } elseif ($action === 'edit_course') {
             // Update existing course
@@ -30,12 +31,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $description = $_POST['description'];
 
             $conn->query("UPDATE courses SET course = '$course', description = '$description' WHERE id = '$id'");
-            echo json_encode(['status' => 2, 'message' => 'Course successfully updated']);
+            echo 2; // Course successfully updated
         } elseif ($action === 'delete_course') {
             // Delete course
             $id = $_POST['id'];
             $conn->query("DELETE FROM courses WHERE id = '$id'");
-            echo json_encode(['status' => 1, 'message' => 'Course successfully deleted']);
+            echo 1; // Course successfully deleted
+        } elseif ($action === 'fetch_courses') {
+            // Fetch all courses for the department
+            $course_query = $conn->query("SELECT * FROM courses WHERE dept_id = '$dept_id' ORDER BY id ASC");
+            $courses = [];
+            while ($row = $course_query->fetch_assoc()) {
+                $courses[] = $row;
+            }
+            echo json_encode($courses); // Return courses as JSON
+            exit; // Exit after sending data
         }
         exit; // Exit after handling the request
     }
@@ -65,7 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="card-header">
                         <b>Course List</b>
                         <span class="">
-                        <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#courseModal"><i class="fa fa-user-plus"></i> New Entry</button>
+                            <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#courseModal"><i class="fa fa-user-plus"></i> New Entry</button>
+                            <button class="btn btn-secondary btn-sm float-right mr-2" id="refreshCourses"><i class="fa fa-sync"></i> Refresh</button> <!-- Refresh button -->
                         </span>
                     </div>
                     <div class="card-body">
@@ -78,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <th class="text-center">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="courseBody"> <!-- Added an ID to tbody for dynamic content -->
                                     <?php 
                                     $i = 1;
                                     $course = $conn->query("SELECT * FROM courses WHERE dept_id = '$dept_id' ORDER BY id ASC");
@@ -152,98 +163,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </style>
 
 <script>
-$(document).ready(function() {
-    // Reset form and initialize DataTable
     function _reset() {
         $('#manage-course').get(0).reset();
         $('#manage-course input, #manage-course textarea').val('');
         $("input[name='action']").val('save_course'); // Reset action to default
     }
 
-    $('.edit_course').click(function() {
-        _reset();
-        var cat = $('#manage-course');
-        cat.find("[name='id']").val($(this).attr('data-id'));
-        cat.find("[name='course']").val($(this).attr('data-course'));
-        cat.find("[name='description']").val($(this).attr('data-description'));
-        $("input[name='action']").val('edit_course'); // Set action to edit
-    });
-
-    $('#manage-course').on('submit', function(e) {
-        e.preventDefault(); // Prevent form submission
-
+    function loadCourses() {
         $.ajax({
-            url: '', // Your PHP file here
+            url: '',
             method: 'POST',
-            data: $(this).serialize(), // Serialize form data
-            dataType: 'json', // Expect JSON response
-            success: function(resp) {
-                if (resp.status == 1 || resp.status == 2) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: resp.message,
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload(); // Reload the page to see updated data
-                    });
-                } else if (resp.status == 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: resp.message,
-                        showConfirmButton: true
-                    });
-                }
-            }
-        });
-    });
-
-    $('.delete_course').click(function() {
-        var id = $(this).attr('data-id');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                delete_course(id);
-            }
-        });
-    });
-
-    function delete_course(id) {
-        $.ajax({
-            url: '', // Your PHP file here
-            method: 'POST',
-            data: { action: 'delete_course', id: id },
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.status == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: resp.message,
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload(); // Reload the page to see updated data
-                    });
-                }
+            data: { action: 'fetch_courses' },
+            success: function(response) {
+                const courses = JSON.parse(response);
+                const tbody = $('#courseBody');
+                tbody.empty(); // Clear current rows
+                let i = 1;
+                courses.forEach(course => {
+                    tbody.append(`
+                        <tr>
+                            <td class="text-center">${i++}</td>
+                            <td class="">
+                                <p>Course: <b>${course.course}</b></p>
+                                <p>Description: <small><b>${course.description}</b></small></p>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-primary edit_course" type="button" data-id="${course.id}" data-course="${course.course}" data-description="${course.description}" data-toggle="modal" data-target="#courseModal">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger delete_course" type="button" data-id="${course.id}">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
             }
         });
     }
 
-    // Initialize DataTable
-    $('#course-table').DataTable({
-        "paging": true,
-        "searching": true,
-        "ordering": true,
-        "info": true
-    });
-});
+    $(document).ready(function() {
+        $('#course-table').DataTable(); // Initialize DataTable
 
+        // Refresh course list on button click
+        $('#refreshCourses').click(function() {
+            loadCourses();
+        });
+
+        // Handle form submission for adding/editing courses
+        $('#manage-course').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: '',
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response == 0) {
+                        Swal.fire('Error!', 'Course already exists.', 'error');
+                    } else if (response == 1) {
+                        Swal.fire('Success!', 'Course successfully added.', 'success');
+                        loadCourses(); // Refresh course list
+                        _reset(); // Reset the form
+                    } else if (response == 2) {
+                        Swal.fire('Success!', 'Course successfully updated.', 'success');
+                        loadCourses(); // Refresh course list
+                        _reset(); // Reset the form
+                    }
+                }
+            });
+        });
+
+        // Edit course
+        $('.edit_course').click(function() {
+            const id = $(this).data('id');
+            const course = $(this).data('course');
+            const description = $(this).data('description');
+
+            $('input[name="id"]').val(id);
+            $('input[name="course"]').val(course);
+            $('textarea[name="description"]').val(description);
+            $("input[name='action']").val('edit_course'); // Change action to edit
+        });
+
+        // Delete course
+        $('.delete_course').click(function() {
+            const id = $(this).data('id');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '',
+                        method: 'POST',
+                        data: { action: 'delete_course', id: id },
+                        success: function(response) {
+                            Swal.fire('Deleted!', 'Course has been deleted.', 'success');
+                            loadCourses(); // Refresh course list
+                        }
+                    });
+                }
+            });
+        });
+
+        // Load courses initially
+        loadCourses();
+    });
 </script>
