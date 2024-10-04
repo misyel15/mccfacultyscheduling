@@ -5,7 +5,6 @@ include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
-
 // Handle form submissions for saving, updating, and deleting courses
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
@@ -19,10 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Check if the course already exists
             $check_query = $conn->query("SELECT * FROM courses WHERE course = '$course' AND dept_id = '$dept_id'");
             if ($check_query->num_rows > 0) {
-                echo 0; // Course already exists
+                echo json_encode(['status' => 0, 'message' => 'Course already exists']);
             } else {
                 $conn->query("INSERT INTO courses (course, description, dept_id) VALUES ('$course', '$description', '$dept_id')");
-                echo 1; // Course successfully added
+                echo json_encode(['status' => 1, 'message' => 'Course successfully added']);
             }
         } elseif ($action === 'edit_course') {
             // Update existing course
@@ -31,17 +30,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $description = $_POST['description'];
 
             $conn->query("UPDATE courses SET course = '$course', description = '$description' WHERE id = '$id'");
-            echo 2; // Course successfully updated
+            echo json_encode(['status' => 2, 'message' => 'Course successfully updated']);
         } elseif ($action === 'delete_course') {
             // Delete course
             $id = $_POST['id'];
             $conn->query("DELETE FROM courses WHERE id = '$id'");
-            echo 1; // Course successfully deleted
+            echo json_encode(['status' => 1, 'message' => 'Course successfully deleted']);
         }
         exit; // Exit after handling the request
     }
 }
-
 ?>
 
 <!-- Include SweetAlert CSS -->
