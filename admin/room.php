@@ -8,22 +8,18 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
 ?>
 
 
-<!-- Include SweetAlert CSS -->
+<!-<!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<!-- Include Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-<!-- Include DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css">
 
-<!-- Include jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Include Bootstrap JS -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<!-- Include DataTables JS -->
-<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
-<!-- Include SweetAlert JS -->
+<!-- Include Bootstrap CSS and SweetAlert JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Include DataTables CSS and JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+
 
 <div class="container-fluid" style="margin-top:100px;">
     <div class="row">
@@ -145,41 +141,50 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: 'ajax.php?action=save_room',
-            data: new FormData($(this)[0]),
-            cache: false,
-            contentType: false,
-            processData: false,
-            method: 'POST',
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Room data successfully added.',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 2) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Room data successfully updated.',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 3) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Room name or ID already exists.',
-                        showConfirmButton: true
-                    });
-                }
-            }
-        });
+    url: 'ajax.php?action=save_room',
+    data: new FormData($(this)[0]),
+    cache: false,
+    contentType: false,
+    processData: false,
+    method: 'POST',
+    success: function(resp) {
+        console.log(resp); // Debugging line to check the response
+        if (resp == 1) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Room data successfully added.',
+                showConfirmButton: true
+            }).then(function() {
+                location.reload(); // Reload the page to reflect changes
+            });
+        } else if (resp == 2) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Room data successfully updated.',
+                showConfirmButton: true
+            }).then(function() {
+                location.reload(); // Reload the page to reflect changes
+            });
+        } else if (resp == 3) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Room name or ID already exists.',
+                showConfirmButton: true
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An unexpected error occurred.',
+                showConfirmButton: true
+            });
+        }
+    }
+});
+
     });
 
     // Edit Room
