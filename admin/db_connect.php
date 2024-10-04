@@ -12,7 +12,7 @@ $database = 'u510162695_scheduling_db';
 $port = 3307; // Specify port if needed
 
 // Create a new MySQLi object
-$conn = new mysqli($host, $username, $password, $database, $port);
+$conn = new mysqli($username, $password, $database, $port);
 
 // Check if the connection was successful
 if ($conn->connect_error) {
