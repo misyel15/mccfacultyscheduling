@@ -24,8 +24,8 @@ class Action {
 			session_start();
 		}
 	
-		// Extract POST variables
-		extract($_POST);
+		// Extract POST variables and sanitize input
+		$id_no = htmlspecialchars(trim($_POST['id_no']), ENT_QUOTES, 'UTF-8');
 	
 		// Prepare the SQL statement to prevent SQL injection
 		$stmt = $this->db->prepare("SELECT *, CONCAT(lastname, ', ', firstname, ' ', middlename) AS name FROM faculty WHERE id_no = ?");
@@ -38,11 +38,11 @@ class Action {
 		if ($result->num_rows > 0) {
 			// Fetch the user data
 			$user_data = $result->fetch_assoc();
-			
-			// Store relevant user data in the session
+	
+			// Store relevant user data in the session, escaping the output
 			foreach ($user_data as $key => $value) {
 				if ($key != 'password' && !is_numeric($key)) {
-					$_SESSION['login_' . $key] = $value;
+					$_SESSION['login_' . $key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 				}
 			}
 			return 1;  // Successful login
@@ -50,6 +50,8 @@ class Action {
 			return 3;  // Invalid ID number
 		}
 	}
+	
+	
 	function logout(){
 		session_destroy();
 		foreach ($_SESSION as $key => $value) {
@@ -206,26 +208,32 @@ class Action {
 			return 1;
 				}
 	}
-
-	function save_course(){
+	function save_course() {
 		extract($_POST);
-		$data = " course = '$course' ";
-		$data .= ", description = '$description' ";
 		
+		// Ensure that $dept_id, $course, and $description are properly set
+		$data = "dept_id = '$dept_id', "; // Start with dept_id
+		$data .= "course = '$course', "; // Append course
+		$data .= "description = '$description' "; // Append description
+	
 		// Check for duplicate course
 		$check_duplicate = $this->db->query("SELECT * FROM courses WHERE course = '$course' AND id != '$id'");
-		if($check_duplicate->num_rows > 0){
+		if ($check_duplicate->num_rows > 0) {
 			// Duplicate course found, return error
 			return 0;
 		}
 		
-		if(empty($id)){
-			$save = $this->db->query("INSERT INTO courses set $data");
-		}else{
-			$save = $this->db->query("UPDATE courses set $data where id = $id");
+		// Check if the ID is empty to determine whether to insert or update
+		if (empty($id)) {
+			// Insert new course
+			$save = $this->db->query("INSERT INTO courses SET $data");
+		} else {
+			// Update existing course
+			$save = $this->db->query("UPDATE courses SET $data WHERE id = $id");
 		}
-		if($save)
-			return 1;
+	
+		// Return success status
+		return $save ? 1 : 2; // Return 2 in case of failure
 	}
 	
 	function delete_course(){
@@ -235,34 +243,44 @@ class Action {
 			return 1;
 		}
 	}
-	function save_subject(){
+	function save_subject() {
 		extract($_POST);
-		$data = " subject = '$subject' ";
-		$data .= ", description = '$description' ";
-		$data .= ", Lec_units = '$lec_units' ";
-		$data .= ", Lab_units = '$lab_units' ";
-		$data .= ", hours = '$hours' ";
-		$data .= ", total_units = '$units' ";
-		$data .= ", course = '$course' ";
-		$data .= ", year = '$cyear' ";
-		$data .= ", semester = '$semester' ";
-		$data .= ", specialization = '$specialization' ";
-		
+		// Assuming the dept_id is stored in the session
+		$dept_id = $_SESSION['dept_id'];
+	
+		// Build the data string with dept_id included
+		$data = "subject = '$subject', ";
+		$data .= "description = '$description', ";
+		$data .= "Lec_units = '$lec_units', ";
+		$data .= "Lab_units = '$lab_units', ";
+		$data .= "hours = '$hours', ";
+		$data .= "total_units = '$units', ";
+		$data .= "course = '$course', ";
+		$data .= "year = '$cyear', ";
+		$data .= "semester = '$semester', ";
+		$data .= "specialization = '$specialization', ";
+		$data .= "dept_id = '$dept_id' "; // Add dept_id to the data string
+	
 		// Check for duplicate subject
 		$check_duplicate = $this->db->query("SELECT * FROM subjects WHERE subject = '$subject' AND id != '$id'");
-		if($check_duplicate->num_rows > 0){
+		if ($check_duplicate->num_rows > 0) {
 			// Duplicate subject found, return error
-			return 0;
+			return 0; // or handle the error appropriately
+		}
+	
+		if (empty($id)) {
+			// Insert new subject
+			$save = $this->db->query("INSERT INTO subjects SET $data");
+		} else {
+			// Update existing subject
+			$save = $this->db->query("UPDATE subjects SET $data WHERE id = $id");
 		}
 		
-		if(empty($id)){
-			$save = $this->db->query("INSERT INTO subjects set $data");
-		}else{
-			$save = $this->db->query("UPDATE subjects set $data where id = $id");
+		if ($save) {
+			return 1; // Successfully saved
 		}
-		if($save)
-			return 1;
 	}
+	
 	
 	function save_fees(){
 		extract($_POST);
@@ -289,68 +307,94 @@ class Action {
 		if($save)
 			return 1;
 	}
-	function save_room(){
+	function save_room() {
 		extract($_POST);
 		$data = " room_name = '$room' ";
 		$data .= ", room_id = '$room_id' ";
-		
-		// Check for duplicate room name or ID
-		$check = $this->db->query("SELECT * FROM roomlist WHERE room_name = '$room' OR room_id = '$room_id'");
-		if($check->num_rows > 0){
+	
+		// Ensure dept_id is extracted from the session
+		$dept_id = $_SESSION['dept_id']; // Retrieve dept_id from session
+		$data .= ", dept_id = '$dept_id' "; // Add dept_id to the data string
+	
+		// Check for duplicate room name or ID within the same department
+		$check = $this->db->query("SELECT * FROM roomlist WHERE (room_name = '$room' OR room_id = '$room_id') AND dept_id = '$dept_id'");
+		if ($check->num_rows > 0) {
 			return 3; // Return a specific code for duplicate entry
 		}
-		
-		if(empty($id)){
-			$save = $this->db->query("INSERT INTO roomlist set $data");
+	
+		if (empty($id)) {
+			$save = $this->db->query("INSERT INTO roomlist SET $data");
 		} else {
-			$save = $this->db->query("UPDATE roomlist set $data where id = $id");
+			$save = $this->db->query("UPDATE roomlist SET $data WHERE id = $id");
 		}
-		if($save)
-			return 1;
+	
+		if ($save) {
+			return 1; // Return 1 for successful save
+		}
+		return 0; // Return 0 if the save operation fails
 	}
 	
-	function save_timeslot(){
+	function save_timeslot() {
 		extract($_POST);
+		
+		// Ensure dept_id is extracted from the session
+		$dept_id = $_SESSION['dept_id']; // Retrieve dept_id from session
+	
 		$data = " time_id = '$time_id' ";
 		$data .= ", timeslot = '$timeslot' ";
-		//$data .= ", hours = '$hours' ";
+		//$data .= ", hours = '$hours' "; // Commented out as per original code
 		$data .= ", schedule = '$schedule' ";
 		$data .= ", specialization = '$specialization' ";
-			if(empty($id)){
-				$save = $this->db->query("INSERT INTO timeslot set $data");
-			}else{
-				$save = $this->db->query("UPDATE timeslot set $data where id = $id");
-			}
-		if($save)
-			return 1;
-	}	
-	function save_section(){
+		$data .= ", dept_id = '$dept_id' "; // Add dept_id to the data string
+	
+		if (empty($id)) {
+			$save = $this->db->query("INSERT INTO timeslot SET $data");
+		} else {
+			$save = $this->db->query("UPDATE timeslot SET $data WHERE id = $id");
+		}
+	
+		if ($save) {
+			return 1; // Return 1 for successful save
+		}
+		return 0; // Return 0 if the save operation fails
+	}
+	
+	function save_section() {
 		extract($_POST);
-		$data = " course = '$course' ";
-		$data .= ", year = '$cyear' ";
-		$data .= ", section = '$section' ";
+		// Assuming the dept_id is stored in the session
+		$dept_id = $_SESSION['dept_id'];
+	
+		// Build the data string with dept_id included
+		$data = "course = '$course', ";
+		$data .= "year = '$cyear', ";
+		$data .= "section = '$section', ";
+		$data .= "dept_id = '$dept_id' "; // Add dept_id to the data string
 	
 		// Check for duplicate section
-		if(empty($id)){
+		if (empty($id)) {
 			$check = $this->db->query("SELECT * FROM section WHERE course = '$course' AND year = '$cyear' AND section = '$section'");
 		} else {
 			$check = $this->db->query("SELECT * FROM section WHERE course = '$course' AND year = '$cyear' AND section = '$section' AND id != '$id'");
 		}
-		if($check->num_rows > 0){
+	
+		if ($check->num_rows > 0) {
 			return 3; // Return a specific code for duplicate entry
 		}
 	
-		if(empty($id)){
-			$save = $this->db->query("INSERT INTO section set $data");
+		if (empty($id)) {
+			// Insert new section
+			$save = $this->db->query("INSERT INTO section SET $data");
 		} else {
-			$save = $this->db->query("UPDATE section set $data where id = $id");
+			// Update existing section
+			$save = $this->db->query("UPDATE section SET $data WHERE id = $id");
 		}
 	
-		if($save){
+		if ($save) {
 			return empty($id) ? 1 : 2; // Return 1 for insert and 2 for update
 		}
 		return 0; // Return 0 if the save operation fails
 	}
+	
 	
 	
 	function delete_subject(){
@@ -435,54 +479,70 @@ class Action {
 			return 1;
 		}
 	}
-	function save_faculty(){
+	function save_faculty() {
 		extract($_POST);
 		$data = '';
-		foreach($_POST as $k=> $v){
-			if(!empty($v)){
-				if($k !='id'){
-					if(empty($data))
-					$data .= " $k='{$v}' ";
-					else
-					$data .= ", $k='{$v}' ";
-				}
-			}
-		}
-			if(empty($id_no)){
-				$i = 1;
-				while($i == 1){
-					$rand = mt_rand(1,99999999);
-					$rand =sprintf("%'08d",$rand);
-					$chk = $this->db->query("SELECT * FROM faculty where id_no = '$rand' ")->num_rows;
-					if($chk <= 0){
-						$data .= ", id_no='$rand' ";
-						$i = 0;
+	
+		// Ensure dept_id is extracted from the session
+		$dept_id = $_SESSION['dept_id']; // Retrieve dept_id from session
+	
+		// Build data string from POST data
+		foreach ($_POST as $k => $v) {
+			if (!empty($v)) {
+				if ($k != 'id') {
+					if (empty($data)) {
+						$data .= " $k='{$v}' ";
+					} else {
+						$data .= ", $k='{$v}' ";
 					}
 				}
 			}
-
-		if(empty($id)){
-			if(!empty($id_no)){
-				$chk = $this->db->query("SELECT * FROM faculty where id_no = '$id_no' ")->num_rows;
-				if($chk > 0){
-					return 2;
-					exit;
-				}
-			}
-			$save = $this->db->query("INSERT INTO faculty set $data ");
-		}else{
-			if(!empty($id_no)){
-				$chk = $this->db->query("SELECT * FROM faculty where id_no = '$id_no' and id != $id ")->num_rows;
-				if($chk > 0){
-					return 2;
-					exit;
-				}
-			}
-			$save = $this->db->query("UPDATE faculty set $data where id=".$id);
 		}
-		if($save)
-			return 1;
+	
+		// Include dept_id in the data string
+		$data .= ", dept_id='{$dept_id}' "; // Add dept_id to the data string
+	
+		// Generate a unique id_no if it's empty
+		if (empty($id_no)) {
+			$i = 1;
+			while ($i == 1) {
+				$rand = mt_rand(1, 99999999);
+				$rand = sprintf("%'08d", $rand);
+				$chk = $this->db->query("SELECT * FROM faculty WHERE id_no = '$rand'")->num_rows;
+				if ($chk <= 0) {
+					$data .= ", id_no='$rand' ";
+					$i = 0;
+				}
+			}
+		}
+	
+		// Check for duplicate id_no before saving
+		if (empty($id)) {
+			if (!empty($id_no)) {
+				$chk = $this->db->query("SELECT * FROM faculty WHERE id_no = '$id_no'")->num_rows;
+				if ($chk > 0) {
+					return 2; // Return code for duplicate id_no
+					exit;
+				}
+			}
+			$save = $this->db->query("INSERT INTO faculty SET $data");
+		} else {
+			if (!empty($id_no)) {
+				$chk = $this->db->query("SELECT * FROM faculty WHERE id_no = '$id_no' AND id != $id")->num_rows;
+				if ($chk > 0) {
+					return 2; // Return code for duplicate id_no
+					exit;
+				}
+			}
+			$save = $this->db->query("UPDATE faculty SET $data WHERE id = " . $id);
+		}
+	
+		if ($save) {
+			return 1; // Return 1 for successful save
+		}
+		return 0; // Return 0 if save operation fails
 	}
+	
 	function delete_faculty(){
 		extract($_POST);
 		$delete = $this->db->query("DELETE FROM faculty where id = ".$id);
@@ -490,8 +550,12 @@ class Action {
 			return 1;
 		}
 	}
-	function save_roomschedule(){
+	function save_roomschedule() {
 		extract($_POST);
+		
+		// Ensure dept_id is extracted from the session
+		$dept_id = $_SESSION['dept_id']; // Retrieve dept_id from session
+	
 		$data = " timeslot_id = '$timeslot_id' ";
 		$data .= ", timeslot = '$timeslot' ";
 		$data .= ", rooms = '$room' ";
@@ -499,7 +563,6 @@ class Action {
 		$data .= ", course = '$yrsection' ";
 		$data .= ", subjects = '$subject' ";
 		$data .= ", semester = '$semester' ";
-		//$rdata = implode($dow);
 		$data .= ", days = '$days' ";
 		$data .= ", sub_description = '$description' ";
 		$data .= ", total_units = '$total_units' ";
@@ -509,38 +572,45 @@ class Action {
 		$data .= ", hours = '$hours' ";
 		$data .= ", timeslot_sid = '$timeslot_sid' ";
 		$data .= ", room_name = '$room_name' ";
-		
-		if(empty($id)){
+		$data .= ", dept_id = '$dept_id' "; // Add dept_id to the data string
+	
+		if (empty($id)) {
+			// Decrease the subject status if this is a new entry
 			$query = $this->db->query("SELECT * FROM subjects WHERE subject='$subject'");
 			foreach ($query as $key) {
-			$status = $key['status'];
-			$newstats = $status - 1;
-			$subjectStats = "status =".$newstats;
-			$update = $this->db->query("UPDATE subjects set ".$subjectStats." where subject='$subject'");
-			}				
-			$sql = "SELECT * FROM loading WHERE timeslot_id ='$timeslot_id' AND rooms='$room' AND days='$days'";
+				$status = $key['status'];
+				$newstats = $status - 1;
+				$subjectStats = "status =" . $newstats;
+				$this->db->query("UPDATE subjects SET " . $subjectStats . " WHERE subject='$subject'");
+			}
+	
+			// Check for existing loading entry
+			$sql = "SELECT * FROM loading WHERE timeslot_id ='$timeslot_id' AND rooms='$room' AND days='$days' AND dept_id='$dept_id'";
 			$query = $this->db->query($sql);
-
-			if($query->num_rows == 0){
-				$save = $this->db->query("INSERT INTO loading set ".$data);
-			}else{
-				return 2;
+	
+			if ($query->num_rows == 0) {
+				$save = $this->db->query("INSERT INTO loading SET " . $data);
+			} else {
+				return 2; // Return 2 for duplicate entry
 			}
-			
-		}else{
+		} else {
+			// Decrease the subject status when updating
 			$query = $this->db->query("SELECT * FROM subjects WHERE subject='$subject'");
 			foreach ($query as $key) {
-			$status = $key['status'];
-			$newstats = $status - 1;
-			$subjectStats = "status =".$newstats;
-			$update = $this->db->query("UPDATE subjects set ".$subjectStats." where subject='$subject'");
+				$status = $key['status'];
+				$newstats = $status - 1;
+				$subjectStats = "status =" . $newstats;
+				$this->db->query("UPDATE subjects SET " . $subjectStats . " WHERE subject='$subject'");
 			}
-			$save = $this->db->query("UPDATE loading set ".$data." where id=".$id);
+			$save = $this->db->query("UPDATE loading SET " . $data . " WHERE id=" . $id);
 		}
-		if($save){
-			return 1;
+	
+		if ($save) {
+			return 1; // Return 1 for successful save
 		}
+		return 0; // Return 0 if the save operation fails
 	}
+	
 	function save_roomscheduletth(){
 		extract($_POST);
 		$data = " timeslot_id = '$timeslot_id' ";
