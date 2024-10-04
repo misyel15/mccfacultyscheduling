@@ -139,6 +139,9 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                 </button>
             </div>
             <div class="modal-body">
+            <form action="" id="manage-section">
+            <input type="hidden" name="id">
+            <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
             </div>
         </div>
     </div>
