@@ -117,65 +117,70 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 </style>
 
 <script>
-    function _reset() {
-        $('#manage-course').get(0).reset();
-        $('#manage-course input,#manage-course textarea').val('');
+    $('#manage-course').submit(function(e) {
+    e.preventDefault();
+
+    // Validation: Check if required fields are filled
+    let course = $("input[name='course']").val().trim();
+    let description = $("textarea[name='description']").val().trim();
+
+    if (course === '' || description === '') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Warning!',
+            text: 'Please fill out all required fields.',
+            showConfirmButton: true
+        });
+        return; // Stop the form submission if validation fails
     }
 
-    $('#manage-course').submit(function(e) {
-        e.preventDefault();
-
-        // Validation: Check if required fields are filled
-        let course = $("input[name='course']").val().trim();
-        let description = $("textarea[name='description']").val().trim();
-
-        if (course === '' || description === '') {
+    $.ajax({
+        url: 'ajax.php?action=save_course',
+        data: new FormData($(this)[0]),
+        cache: false,
+        contentType: false,
+        processData: false,
+        method: 'POST',
+        success: function(resp) {
+            if (resp == 1) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Data successfully added!',
+                    showConfirmButton: true
+                }).then(function() {
+                    location.reload();
+                });
+            } else if (resp == 2) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Data successfully updated!',
+                    showConfirmButton: true
+                }).then(function() {
+                    location.reload();
+                });
+            } else if (resp == 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Course already exists or required fields are empty!',
+                    showConfirmButton: true
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error: ", error); // Log AJAX error
             Swal.fire({
-                icon: 'warning',
-                title: 'Warning!',
-                text: 'Please fill out all required fields.',
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while processing your request.',
                 showConfirmButton: true
             });
-            return; // Stop the form submission if validation fails
         }
-
-        $.ajax({
-            url: 'ajax.php?action=save_course',
-            data: new FormData($(this)[0]),
-            cache: false,
-            contentType: false,
-            processData: false,
-            method: 'POST',
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Data successfully added!',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 2) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Data successfully updated!',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Course already exists!',
-                        showConfirmButton: true
-                    });
-                }
-            }
-        });
     });
+});
+
 
     $('.edit_course').click(function() {
         _reset();
