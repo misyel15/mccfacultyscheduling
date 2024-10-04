@@ -291,7 +291,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
 
        
             <div class="account-dropdown__footer">
-                <a href="http://www.mccfacultyscheduling.com/admin/action.php?action=login">
+                <a href="http://www.mccfacultyscheduling.com/admin/ajax.php?action=login">
                     <i class="zmdi zmdi-power"></i>Logout
                 </a>
             </div>
