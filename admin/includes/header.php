@@ -9,7 +9,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
 }
 
 ?>
-<?include('db_connect.php');?>
+
 <!DOCTYPE html>
 <html lang="en">
 
