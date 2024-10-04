@@ -208,26 +208,30 @@ class Action {
 				}
 	}
 
-	function save_course(){
-		extract($_POST);
-		$data = " course = '$course' ";
-		$data .= ", description = '$description' ";
-		
-		// Check for duplicate course
-		$check_duplicate = $this->db->query("SELECT * FROM courses WHERE course = '$course' AND id != '$id'");
-		if($check_duplicate->num_rows > 0){
-			// Duplicate course found, return error
-			return 0;
-		}
-		
-		if(empty($id)){
-			$save = $this->db->query("INSERT INTO courses set $data");
-		}else{
-			$save = $this->db->query("UPDATE courses set $data where id = $id");
-		}
-		if($save)
-			return 1;
-	}
+function save_course(){
+    extract($_POST);
+    $data = " course = '$course' ";
+    $data .= ", description = '$description' ";
+    $data .= ", dept_id = '$dept_id' ";  // Add dept_id to the data
+    
+    // Check for duplicate course within the same department
+    $check_duplicate = $this->db->query("SELECT * FROM courses WHERE course = '$course' AND dept_id = '$dept_id' AND id != '$id'");
+    if($check_duplicate->num_rows > 0){
+        // Duplicate course found in the same department, return error
+        return 0;
+    }
+    
+    if(empty($id)){
+        // Insert new course with dept_id
+        $save = $this->db->query("INSERT INTO courses set $data");
+    }else{
+        // Update existing course with dept_id
+        $save = $this->db->query("UPDATE courses set $data where id = $id");
+    }
+    if($save)
+        return 1;
+}
+
 	
 	function delete_course(){
 		extract($_POST);
