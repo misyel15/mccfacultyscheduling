@@ -41,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit; // Exit after handling the request
     }
 }
-
 ?>
 
 <!-- Include SweetAlert CSS -->
@@ -67,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="card-header">
                         <b>Course List</b>
                         <span class="">
-                        <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#courseModal"><i class="fa fa-user-plus"></i> New Entry</button>
+                            <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#courseModal"><i class="fa fa-user-plus"></i> New Entry</button>
                         </span>
                     </div>
                     <div class="card-body">
@@ -154,45 +153,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </style>
 
 <script>
-    $(document).on('submit', '#manage-course', function(e) {
-    e.preventDefault(); // Prevent default form submission
-    const formData = $(this).serialize(); // Serialize the form data
-
-    $.ajax({
-        url: '', // Update to the correct URL if necessary
-        method: 'POST',
-        data: formData,
-        success: function(resp) {
-            if (resp == 1) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Course successfully added.',
-                    showConfirmButton: true
-                }).then(function() {
-                    location.reload(); // Reload the page to see the changes
-                });
-            } else if (resp == 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Course already exists.',
-                    showConfirmButton: true
-                });
-            } else if (resp == 2) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Updated!',
-                    text: 'Course successfully updated.',
-                    showConfirmButton: true
-                }).then(function() {
-                    location.reload(); // Reload the page to see the changes
-                });
-            }
-        }
-    });
-});
-
     function _reset() {
         $('#manage-course').get(0).reset();
         $('#manage-course input, #manage-course textarea').val('');
@@ -206,6 +166,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         cat.find("[name='course']").val($(this).attr('data-course'));
         cat.find("[name='description']").val($(this).attr('data-description'));
         $("input[name='action']").val('edit_course'); // Set action to edit
+    });
+
+    $(document).on('submit', '#manage-course', function(e) {
+        e.preventDefault(); // Prevent default form submission
+        const formData = $(this).serialize(); // Serialize the form data
+
+        $.ajax({
+            url: '', // Update to the correct URL if necessary
+            method: 'POST',
+            data: formData,
+            success: function(resp) {
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Course successfully added.',
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload(); // Reload the page to see the changes
+                    });
+                } else if (resp == 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Course already exists.',
+                        showConfirmButton: true
+                    });
+                } else if (resp == 2) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: 'Course successfully updated.',
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload(); // Reload the page to see the changes
+                    });
+                }
+            }
+        });
     });
 
     $('.delete_course').click(function() {
@@ -256,3 +255,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
     });
 </script>
+
