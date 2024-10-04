@@ -210,8 +210,8 @@ function save_course() {
                             icon: 'success',
                             title: 'Saved!',
                             text: 'Course successfully added.',
-                            showConfirmButton: false,
-                            timer: 1500
+                            showConfirmButton: true,
+                       
                         }).then(function() {
                             location.reload();
                         });
@@ -227,8 +227,8 @@ function save_course() {
                             icon: 'success',
                             title: 'Updated!',
                             text: 'Course successfully updated.',
-                            showConfirmButton: false,
-                            timer: 1500
+                            showConfirmButton: true,
+                           
                         }).then(function() {
                             location.reload();
                         });
@@ -257,8 +257,8 @@ function delete_course(id) {
                     icon: 'success',
                     title: 'Deleted!',
                     text: 'Data successfully deleted.',
-                    showConfirmButton: false,
-                    timer: 1500
+                    showConfirmButton: true,
+           
                 }).then(function() {
                     location.reload();
                 });
