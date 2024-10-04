@@ -209,50 +209,77 @@ class Action {
 				}
 	}
 	function save_course() {
-		// Extract POST data
 		extract($_POST);
 		
-		// Validate inputs
-		if (empty($dept_id) || empty($course) || empty($description)) {
-			return 0; // Return an error if required fields are empty
-		}
-	
-		// Escape data to prevent SQL injection
-		$dept_id = $this->db->real_escape_string($dept_id);
-		$course = $this->db->real_escape_string($course);
-		$description = $this->db->real_escape_string($description);
+		// Ensure that $dept_id, $course, and $description are properly set
+		$data = "dept_id = '$dept_id', "; // Start with dept_id
+		$data .= "course = '$course', "; // Append course
+		$data .= "description = '$description' "; // Append description
 	
 		// Check for duplicate course
 		$check_duplicate = $this->db->query("SELECT * FROM courses WHERE course = '$course' AND id != '$id'");
 		if ($check_duplicate->num_rows > 0) {
-			return 0; // Duplicate course found, return error
+			// Duplicate course found, return error
+			return 0;
 		}
-	
-		// Determine whether to insert or update
+		
+		// Check if the ID is empty to determine whether to insert or update
 		if (empty($id)) {
 			// Insert new course
-			$save = $this->db->query("INSERT INTO courses (dept_id, course, description) VALUES ('$dept_id', '$course', '$description')");
+			$save = $this->db->query("INSERT INTO courses SET $data");
 		} else {
 			// Update existing course
-			$save = $this->db->query("UPDATE courses SET dept_id = '$dept_id', course = '$course', description = '$description' WHERE id = $id");
+			$save = $this->db->query("UPDATE courses SET $data WHERE id = $id");
 		}
 	
 		// Return success status
-		return $save ? 1 : 2; // Return 1 for success, 2 for failure
+		return $save ? 1 : 2; // Return 2 in case of failure
 	}
-	function delete_course() {
-		extract($_POST);
 	
-		// Ensure ID is set
-		if (empty($id)) {
-			return 0; // ID is required for deletion
+	function delete_course(){
+		extract($_POST);
+		$delete = $this->db->query("DELETE FROM courses where id = ".$id);
+		if($delete){
+			return 1;
+		}
+	}
+	function save_subject() {
+		extract($_POST);
+		// Assuming the dept_id is stored in the session
+		$dept_id = $_SESSION['dept_id'];
+	
+		// Build the data string with dept_id included
+		$data = "subject = '$subject', ";
+		$data .= "description = '$description', ";
+		$data .= "Lec_units = '$lec_units', ";
+		$data .= "Lab_units = '$lab_units', ";
+		$data .= "hours = '$hours', ";
+		$data .= "total_units = '$units', ";
+		$data .= "course = '$course', ";
+		$data .= "year = '$cyear', ";
+		$data .= "semester = '$semester', ";
+		$data .= "specialization = '$specialization', ";
+		$data .= "dept_id = '$dept_id' "; // Add dept_id to the data string
+	
+		// Check for duplicate subject
+		$check_duplicate = $this->db->query("SELECT * FROM subjects WHERE subject = '$subject' AND id != '$id'");
+		if ($check_duplicate->num_rows > 0) {
+			// Duplicate subject found, return error
+			return 0; // or handle the error appropriately
 		}
 	
-		// Delete course
-		$delete = $this->db->query("DELETE FROM courses WHERE id = " . intval($id)); // Use intval to prevent SQL injection
-		return $delete ? 1 : 0; // Return 1 for success, 0 for failure
-	}
+		if (empty($id)) {
+			// Insert new subject
+			$save = $this->db->query("INSERT INTO subjects SET $data");
+		} else {
+			// Update existing subject
+			$save = $this->db->query("UPDATE subjects SET $data WHERE id = $id");
+		}
 		
+		if ($save) {
+			return 1; // Successfully saved
+		}
+	}
 	
 	
 	function save_fees(){
