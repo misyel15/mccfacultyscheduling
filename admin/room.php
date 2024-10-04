@@ -145,7 +145,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: 'ajax.php?action=save_room',
+            url: 'admin/ajax.php?action=save_room',
             data: new FormData($(this)[0]),
             cache: false,
             contentType: false,
@@ -212,7 +212,7 @@ $(document).ready(function() {
 
     function delete_room(id) {
         $.ajax({
-            url: 'ajax.php?action=delete_room',
+            url: './ajax.php?action=delete_room',
             method: 'POST',
             data: { id: id },
             success: function(resp) {
