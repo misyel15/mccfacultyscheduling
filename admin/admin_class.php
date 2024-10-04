@@ -249,40 +249,58 @@ class Action {
 				}
 	}
 	function save_course() {
+		global $conn; // Ensure the database connection is available
+	
+		// Extract the parameters
 		extract($_POST);
 		
-		// Ensure that $dept_id, $course, and $description are properly set
-		$data = "dept_id = '$dept_id', "; // Start with dept_id
-		$data .= "course = '$course', "; // Append course
-		$data .= "description = '$description' "; // Append description
-	
-		// Check for duplicate course
-		$check_duplicate = $this->db->query("SELECT * FROM courses WHERE course = '$course' AND id != '$id'");
-		if ($check_duplicate->num_rows > 0) {
-			// Duplicate course found, return error
-			return 0;
-		}
+		// Prepare the data for insertion/update
+		$data = [
+			'dept_id' => $dept_id,
+			'course' => $course,
+			'description' => $description
+		];
 		
+		// Check for duplicate course
+		$check_duplicate = $conn->prepare("SELECT * FROM courses WHERE course = ? AND id != ?");
+		$check_duplicate->bind_param("si", $course, $id);
+		$check_duplicate->execute();
+		$result = $check_duplicate->get_result();
+		
+		if ($result->num_rows > 0) {
+			return 0; // Duplicate found
+		}
+	
 		// Check if the ID is empty to determine whether to insert or update
 		if (empty($id)) {
 			// Insert new course
-			$save = $this->db->query("INSERT INTO courses SET $data");
+			$stmt = $conn->prepare("INSERT INTO courses (dept_id, course, description) VALUES (?, ?, ?)");
+			$stmt->bind_param("iss", $data['dept_id'], $data['course'], $data['description']);
 		} else {
 			// Update existing course
-			$save = $this->db->query("UPDATE courses SET $data WHERE id = $id");
+			$stmt = $conn->prepare("UPDATE courses SET dept_id = ?, course = ?, description = ? WHERE id = ?");
+			$stmt->bind_param("issi", $data['dept_id'], $data['course'], $data['description'], $id);
 		}
 	
-		// Return success status
-		return $save ? 1 : 2; // Return 2 in case of failure
+		// Execute the statement
+		if ($stmt->execute()) {
+			return empty($id) ? 1 : 2; // 1 for insert, 2 for update
+		}
+		return 2; // Error occurred
 	}
-	
-	function delete_course(){
+	function delete_course() {
+		global $conn; // Ensure the database connection is available
 		extract($_POST);
-		$delete = $this->db->query("DELETE FROM courses where id = ".$id);
-		if($delete){
-			return 1;
+	
+		$stmt = $conn->prepare("DELETE FROM courses WHERE id = ?");
+		$stmt->bind_param("i", $id);
+		
+		if ($stmt->execute()) {
+			return 1; // Successfully deleted
 		}
+		return 0; // Error occurred
 	}
+	
 	function save_subject() {
 		extract($_POST);
 		// Assuming the dept_id is stored in the session
