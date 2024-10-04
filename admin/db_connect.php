@@ -22,3 +22,4 @@ if ($conn->connect_error) {
 }
 
 // Proceed with your queries after connection is successful
+?>
