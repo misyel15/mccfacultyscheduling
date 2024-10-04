@@ -53,7 +53,7 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                             <tbody>
                                 <?php
                                     $type = array("", "", "Admin", "Staff", "Alumnus/Alumna");
-                                    $users = $conn->query("SELECT * FROM users ORDER BY name ASC");
+                                    $users = $conn->query("SELECT * FROM users WHERE dept_id = '$dept_id' ORDER BY name ASC");
                                     $i = 1;
                                     while ($row = $users->fetch_assoc()):
                                 ?>
