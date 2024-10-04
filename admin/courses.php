@@ -123,71 +123,66 @@ if (!$dept_id) {
 </style>
 
 <script>
-    function _reset() {
-        $('#manage-course').get(0).reset();
-        $('#manage-course input,#manage-course textarea').val('');
-        
-        // Set dept_id in the modal
-        $("input[name='dept_id']").val('<?php echo $dept_id; ?>'); // Ensure dept_id is set in the form
+   $('#manage-course').submit(function(e) {
+    e.preventDefault();
+
+    let course = $("input[name='course']").val().trim();
+    let description = $("textarea[name='description']").val().trim();
+
+    if (course === '' || description === '') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Warning!',
+            text: 'Please fill out all required fields.',
+            showConfirmButton: true
+        });
+        return;
     }
 
-    $('#manage-course').submit(function(e) {
-        e.preventDefault();
-
-        // Log dept_id to see if it's set correctly
-        console.log("Department ID:", $("input[name='dept_id']").val());
-
-        // Validation: Check if required fields are filled
-        let course = $("input[name='course']").val().trim();
-        let description = $("textarea[name='description']").val().trim();
-
-        if (course === '' || description === '') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Warning!',
-                text: 'Please fill out all required fields.',
-                showConfirmButton: true
-            });
-            return; // Stop the form submission if validation fails
-        }
-
-        $.ajax({
-            url: 'ajax.php?action=save_course',
-            data: new FormData($(this)[0]),
-            cache: false,
-            contentType: false,
-            processData: false,
-            method: 'POST',
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Data successfully added!',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 2) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Data successfully updated!',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Course already exists!',
-                        showConfirmButton: true
-                    });
-                }
+    $.ajax({
+        url: 'ajax.php?action=save_course',
+        data: new FormData($(this)[0]),
+        cache: false,
+        contentType: false,
+        processData: false,
+        method: 'POST',
+        success: function(resp) {
+            // Log the response for debugging
+            console.log("Response:", resp);
+            if (resp == 1) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Data successfully added!',
+                }).then(() => {
+                    location.reload();
+                });
+            } else if (resp == 2) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Data successfully updated!',
+                }).then(() => {
+                    location.reload();
+                });
+            } else if (resp == 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Course already exists!',
+                });
             }
-        });
+        },
+        error: function(xhr, status, error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while processing your request.',
+            });
+            console.error("AJAX Error:", status, error);
+        }
     });
+});
 
     $('.edit_course').click(function() {
         _reset();
@@ -213,26 +208,56 @@ if (!$dept_id) {
             }
         });
     });
+    $('.delete_course').click(function() {
+    var id = $(this).attr('data-id');
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            delete_course(id);
+        }
+    });
+});
 
-    function delete_course(id) {
-        $.ajax({
-            url: 'ajax.php?action=delete_course',
-            method: 'POST',
-            data: { id: id },
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: 'Data successfully deleted.',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                }
+function delete_course(id) {
+    $.ajax({
+        url: 'ajax.php?action=delete_course',
+        method: 'POST',
+        data: { id: id },
+        success: function(resp) {
+            if (resp == 1) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'Data successfully deleted.',
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while deleting the course.',
+                });
             }
-        });
-    }
+        },
+        error: function(xhr, status, error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while processing your request.',
+            });
+            console.error("AJAX Error:", status, error);
+        }
+    });
+}
+
 
     // Initialize DataTable
     $(document).ready(function() {
