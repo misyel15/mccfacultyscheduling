@@ -2,16 +2,17 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+// Change these values to match your hosting and database credentials
+$host = '3307'; // Or use the provided hostname
+$username = 'u510162695_scheduling_db';
+$password = '1Scheduling_db';
+$database = 'u510162695_scheduling_db';
 
-// Define the database connection parameters
-$MySQL_username = 'u510162695_scheduling_db';
-$Password = '1Scheduling_db';
-$MySQL_database_name = 'u510162695_scheduling_db';
+// Create connection
+$conn = new mysqli($host, $username, $password, $database);
 
-// Create a new MySQLi object
-$conn = new mysqli($MySQL_username, $Password, $MySQL_database_name);
-
-// Check if the connection was successful
+// Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die('Connection failed: ' . $conn->connect_error);
 }
+
