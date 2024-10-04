@@ -151,108 +151,126 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </style>
 
 <script>
-    function _reset() {
-        $('#manage-course').get(0).reset();
-        $('#manage-course input, #manage-course textarea').val('');
-        $("input[name='action']").val('save_course'); // Reset action to default
-    }
+   // Function to reset the form
+function _reset() {
+    $('#manage-course').get(0).reset();
+    $('#manage-course input, #manage-course textarea').val('');
+    $("input[name='action']").val('save_course');
+}
 
-    $('.edit_course').click(function() {
-        _reset();
-        var cat = $('#manage-course');
-        cat.find("[name='id']").val($(this).attr('data-id'));
-        cat.find("[name='course']").val($(this).attr('data-course'));
-        cat.find("[name='description']").val($(this).attr('data-description'));
-        $("input[name='action']").val('edit_course'); // Set action to edit
+// Edit course button click event
+$('.edit_course').click(function() {
+    _reset();
+    var cat = $('#manage-course');
+    cat.find("[name='id']").val($(this).attr('data-id'));
+    cat.find("[name='course']").val($(this).attr('data-course'));
+    cat.find("[name='description']").val($(this).attr('data-description'));
+    $("input[name='action']").val('edit_course');
+});
+
+// Delete course button click event
+$('.delete_course').click(function() {
+    var id = $(this).attr('data-id');
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            delete_course(id);
+        }
     });
+});
 
-    $('.delete_course').click(function() {
-        var id = $(this).attr('data-id');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                delete_course(id);
-            }
-        });
-    });
-
-    function save_course() {
-        var formData = $('#manage-course').serialize();
-        
-        $.ajax({
-            url: '',
-            method: 'POST',
-            data: formData,
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Saved!',
-                        text: 'Course successfully added.',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload(); // Refresh the page after saving
-                    });
-                } else if (resp == 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Course already exists.',
-                        showConfirmButton: true
-                    });
-                } else if (resp == 2) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Updated!',
-                        text: 'Course successfully updated.',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload(); // Refresh the page after updating
-                    });
+// Function to save or update a course
+function save_course() {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you want to save these changes?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var formData = $('#manage-course').serialize();
+            
+            $.ajax({
+                url: '',
+                method: 'POST',
+                data: formData,
+                success: function(resp) {
+                    if (resp == 1) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Saved!',
+                            text: 'Course successfully added.',
+                            showConfirmButton: true
+                        }).then(function() {
+                            location.reload();
+                        });
+                    } else if (resp == 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Course already exists.',
+                            showConfirmButton: true
+                        });
+                    } else if (resp == 2) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated!',
+                            text: 'Course successfully updated.',
+                            showConfirmButton: true
+                        }).then(function() {
+                            location.reload();
+                        });
+                    }
                 }
-            }
-        });
-    }
-
-    $('#manage-course').on('submit', function(e) {
-        e.preventDefault(); // Prevent the default form submission
-        save_course(); // Call the save_course function
+            });
+        }
     });
+}
 
-    function delete_course(id) {
-        $.ajax({
-            url: '',
-            method: 'POST',
-            data: { action: 'delete_course', id: id },
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: 'Data successfully deleted.',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload(); // Refresh the page after deletion
-                    });
-                }
+// Form submission event
+$('#manage-course').on('submit', function(e) {
+    e.preventDefault();
+    save_course();
+});
+
+// Function to delete a course
+function delete_course(id) {
+    $.ajax({
+        url: '',
+        method: 'POST',
+        data: { action: 'delete_course', id: id },
+        success: function(resp) {
+            if (resp == 1) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'Data successfully deleted.',
+                    showConfirmButton: true
+                }).then(function() {
+                    location.reload();
+                });
             }
-        });
-    }
-
-    // Initialize DataTable
-    $(document).ready(function() {
-        $('#course-table').DataTable({
-            "paging": true,
-            "searching": true,
-            "ordering": true,
-            "info": true
-        });
+        }
     });
+}
+
+// Initialize DataTable
+$(document).ready(function() {
+    $('#course-table').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "info": true
+    });
+});
 </script>
