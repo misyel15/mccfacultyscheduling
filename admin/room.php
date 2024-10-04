@@ -145,7 +145,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: 'admin_class.php?action=save_room',
+            url: 'ajax.php?action=save_room',
             data: new FormData($(this)[0]),
             cache: false,
             contentType: false,
