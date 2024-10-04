@@ -1,14 +1,18 @@
 <?php
 session_start(); // Start the session
-include('db_connect.php');
+include('db_connect.php'); // Ensure you have your database connection
 include 'includes/header.php';
 
 // Assuming the user department ID is stored in the session after login
 $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
+
+// Check if department ID is valid
+if (is_null($dept_id)) {
+    die("Invalid department ID");
+}
 ?>
 
-
-<!-<!-- Include SweetAlert CSS -->
+<!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 <!-- Include Bootstrap CSS and SweetAlert JS -->
@@ -20,40 +24,38 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 
-
 <div class="container-fluid" style="margin-top:100px;">
     <div class="row">
         <!-- FORM Panel -->
         <div class="col-md-4">
-        <!-- Modal -->
-<div class="modal fade" id="roomModal" tabindex="-1" aria-labelledby="roomModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="roomModalLabel">Room Form</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form action="" id="manage-room">
-                    <input type="hidden" name="id">
-                    <div class="form-group mb-3">
-                        <label class="form-label">Room ID</label>
-                        <input type="text" class="form-control" name="room_id" id="room_id">
+            <!-- Modal -->
+            <div class="modal fade" id="roomModal" tabindex="-1" aria-labelledby="roomModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="roomModalLabel">Room Form</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="" id="manage-room">
+                                <input type="hidden" name="id">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Room ID</label>
+                                    <input type="text" class="form-control" name="room_id" id="room_id" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Room Name</label>
+                                    <input type="text" class="form-control" name="room" id="room" required>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="saveRoomBtn">Save</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </div>
                     </div>
-                    <div class="form-group mb-3">
-                        <label class="form-label">Room</label>
-                        <input type="text" class="form-control" name="room" id="room">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="saveRoomBtn">Save</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 </div>
-        </div>
-    </div>
-</div>
-
+            </div>
             <!-- Modal -->
         </div>
         <!-- FORM Panel -->
@@ -71,7 +73,7 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                             <thead>
                                 <tr>
                                     <th class="text-center">#</th>
-                                    <th class="text-center">Room</th>
+                                    <th class="text-center">Room Name</th>
                                     <th class="text-center">Action</th>
                                 </tr>
                             </thead>
@@ -79,8 +81,7 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                             <?php 
                                     $i = 1;
                                     $course = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' ORDER BY id ASC");
-                                    while($row = $course->fetch_assoc()):
-                                    ?>
+                                    while ($row = $course->fetch_assoc()): ?>
                                 <tr>
                                     <td class="text-center"><?php echo $row['room_id']; ?></td>
                                     <td>
@@ -91,7 +92,7 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                                         <button class="btn btn-sm btn-danger delete_room" type="button" data-id="<?php echo $row['id']; ?>"><i class="fas fa-trash-alt"></i> Delete</button>
                                     </td>
                                 </tr>
-                                <?php endwhile; ?>
+                            <?php endwhile; ?>
                             </tbody>
                         </table>
                     </div>
@@ -112,13 +113,9 @@ $(document).ready(function() {
     // Show the modal when clicking the "New Entry" button
     $('#newEntryBtn').click(function() {
         $('#roomModal').modal('show');
+        $('#manage-room').get(0).reset(); // Reset the form
+        $('#manage-room input[name="id"]').val(''); // Reset hidden id
     });
-
-    // Reset form function
-    function _reset() {
-        $('#manage-room').get(0).reset();
-        $('#manage-room input').val('');
-    }
 
     // Save Room
     $('#saveRoomBtn').click(function() {
@@ -126,7 +123,7 @@ $(document).ready(function() {
     });
 
     $('#manage-room').submit(function(e) {
-        e.preventDefault();
+        e.preventDefault(); // Prevent default form submission
         let room = $("input[name='room']").val().trim();
         let room_id = $("input[name='room_id']").val().trim();
 
@@ -141,60 +138,59 @@ $(document).ready(function() {
         }
 
         $.ajax({
-    url: 'ajax.php?action=save_room',
-    data: new FormData($(this)[0]),
-    cache: false,
-    contentType: false,
-    processData: false,
-    method: 'POST',
-    success: function(resp) {
-        console.log(resp); // Debugging line to check the response
-        if (resp == 1) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Room data successfully added.',
-                showConfirmButton: true
-            }).then(function() {
-                location.reload(); // Reload the page to reflect changes
-            });
-        } else if (resp == 2) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Room data successfully updated.',
-                showConfirmButton: true
-            }).then(function() {
-                location.reload(); // Reload the page to reflect changes
-            });
-        } else if (resp == 3) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Room name or ID already exists.',
-                showConfirmButton: true
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'An unexpected error occurred.',
-                showConfirmButton: true
-            });
-        }
-    }
-});
-
+            url: 'ajax.php?action=save_room',
+            data: new FormData($(this)[0]),
+            cache: false,
+            contentType: false,
+            processData: false,
+            method: 'POST',
+            success: function(resp) {
+                console.log(resp); // Debugging line to check the response
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Room data successfully added.',
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload(); // Reload the page to reflect changes
+                    });
+                } else if (resp == 2) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Room data successfully updated.',
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload(); // Reload the page to reflect changes
+                    });
+                } else if (resp == 3) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Room name or ID already exists.',
+                        showConfirmButton: true
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An unexpected error occurred.',
+                        showConfirmButton: true
+                    });
+                }
+            }
+        });
     });
 
     // Edit Room
     $('.edit_room').click(function() {
         var cat = $('#manage-room');
-        cat.get(0).reset();
-        cat.find("[name='id']").val($(this).attr('data-id'));
-        cat.find("[name='room']").val($(this).attr('data-room'));
-        cat.find("[name='room_id']").val($(this).attr('data-room_id'));
-        $('#roomModal').modal('show');
+        cat.get(0).reset(); // Reset the form
+        cat.find("[name='id']").val($(this).attr('data-id')); // Set ID for editing
+        cat.find("[name='room']").val($(this).attr('data-room')); // Set room name
+        cat.find("[name='room_id']").val($(this).attr('data-room_id')); // Set room ID
+        $('#roomModal').modal('show'); // Show modal for editing
     });
 
     // Delete Room
@@ -228,7 +224,7 @@ $(document).ready(function() {
                         text: 'Room data successfully deleted.',
                         showConfirmButton: true
                     }).then(function() {
-                        location.reload();
+                        location.reload(); // Reload the page to reflect changes
                     });
                 }
             }
