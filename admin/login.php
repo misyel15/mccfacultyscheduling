@@ -1,44 +1,5 @@
 <?php
-session_start();
 include 'db_connect.php'; 
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sanitize user input to prevent XSS attacks
-    $username = htmlspecialchars(trim($_POST['username']));
-    $password = htmlspecialchars(trim($_POST['password']));
-
-    // Prepare and execute the login query
-    $stmt = $conn->prepare("
-        SELECT id, name, username, dept_id, type FROM users 
-        WHERE username = ? 
-        AND password = ?
-    ");
-    $hashed_password = md5($password); // Use md5 or a stronger hashing algorithm
-    $stmt->bind_param("ss", $username, $hashed_password);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $user_data = $result->fetch_assoc();
-
-        // Store only necessary user information in the session
-        $_SESSION['user_id'] = $user_data['id'];
-        $_SESSION['dept_id'] = $user_data['dept_id'];
-        $_SESSION['username'] = htmlspecialchars($user_data['username']); // Prevent XSS when outputting username
-        $_SESSION['name'] = htmlspecialchars($user_data['name']); // Prevent XSS when outputting name
-        $_SESSION['login_type'] = $user_data['type'];
-
-        if ($_SESSION['login_type'] != 1) {
-            session_unset();
-            echo 2; // User is not allowed
-        } else {
-            echo 1; // Successful login
-        }
-    } else {
-        echo 3; // Invalid username/password
-    }
-    exit;
-}
 ?>
 
 
