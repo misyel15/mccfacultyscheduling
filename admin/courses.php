@@ -41,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit; // Exit after handling the request
     }
 }
-
 ?>
 
 <!-- Include SweetAlert CSS -->
@@ -67,7 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="card-header">
                         <b>Course List</b>
                         <span class="">
-                            <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#courseModal"><i class="fa fa-user-plus"></i> New Entry</button>
+                            <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#courseModal">
+                                <i class="fa fa-user-plus"></i> New Entry
+                            </button>
                         </span>
                     </div>
                     <div class="card-body">
@@ -84,23 +85,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <?php 
                                     $i = 1;
                                     $course = $conn->query("SELECT * FROM courses WHERE dept_id = '$dept_id' ORDER BY id ASC");
-                                    while($row = $course->fetch_assoc()):
-                                    ?>
-                                    <tr>
-                                        <td class="text-center"><?php echo $i++ ?></td>
-                                        <td class="">
-                                            <p>Course: <b><?php echo $row['course'] ?></b></p>
-                                            <p>Description: <small><b><?php echo $row['description'] ?></b></small></p>
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-sm btn-primary edit_course" type="button" data-id="<?php echo $row['id'] ?>" data-course="<?php echo $row['course'] ?>" data-description="<?php echo $row['description'] ?>" data-toggle="modal" data-target="#courseModal">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </button>
-                                            <button class="btn btn-sm btn-danger delete_course" type="button" data-id="<?php echo $row['id'] ?>">
-                                                <i class="fas fa-trash-alt"></i> Delete
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    while($row = $course->fetch_assoc()): ?>
+                                        <tr>
+                                            <td class="text-center"><?php echo $i++ ?></td>
+                                            <td class="">
+                                                <p>Course: <b><?php echo $row['course'] ?></b></p>
+                                                <p>Description: <small><b><?php echo $row['description'] ?></b></small></p>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-primary edit_course" type="button" data-id="<?php echo $row['id'] ?>" data-course="<?php echo $row['course'] ?>" data-description="<?php echo $row['description'] ?>" data-toggle="modal" data-target="#courseModal">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <button class="btn btn-sm btn-danger delete_course" type="button" data-id="<?php echo $row['id'] ?>">
+                                                    <i class="fas fa-trash-alt"></i> Delete
+                                                </button>
+                                            </td>
+                                        </tr>
                                     <?php endwhile; ?>
                                 </tbody>
                             </table>
@@ -186,45 +186,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
     });
 
-    function delete_course(id) {
-        // Use form submission for delete action
+    function save_course() {
+        var formData = $('#manage-course').serialize();
+        
         $.ajax({
-            url: '', // Update to your script URL if needed
-            method: 'POST',
-            data: { action: 'delete_course', id: id },
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: 'Data successfully deleted.',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                }
-            }
-        });
-    }
-
-    // Handle form submission for saving/editing
-    $(document).on('submit', '#manage-course', function(e) {
-        e.preventDefault(); // Prevent default form submission
-        const formData = $(this).serialize(); // Serialize the form data
-
-        $.ajax({
-            url: '', // Update to your script URL if needed
+            url: '',
             method: 'POST',
             data: formData,
             success: function(resp) {
                 if (resp == 1) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Success!',
+                        title: 'Saved!',
                         text: 'Course successfully added.',
                         showConfirmButton: true
                     }).then(function() {
-                        location.reload(); // Reload the page to see the changes
+                        location.reload(); // Refresh the page after saving
                     });
                 } else if (resp == 0) {
                     Swal.fire({
@@ -240,18 +217,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         text: 'Course successfully updated.',
                         showConfirmButton: true
                     }).then(function() {
-                        location.reload(); // Reload the page to see the changes
+                        location.reload(); // Refresh the page after updating
                     });
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error(error); // Log any errors for debugging
             }
         });
+    }
+
+    $('#manage-course').on('submit', function(e) {
+        e.preventDefault(); // Prevent the default form submission
+        save_course(); // Call the save_course function
     });
 
+    function delete_course(id) {
+        $.ajax({
+            url: '',
+            method: 'POST',
+            data: { action: 'delete_course', id: id },
+            success: function(resp) {
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Data successfully deleted.',
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload(); // Refresh the page after deletion
+                    });
+                }
+            }
+        });
+    }
+
+    // Initialize DataTable
     $(document).ready(function() {
-        $('#course-table').DataTable(); // Initialize DataTables
+        $('#course-table').DataTable({
+            "paging": true,
+            "searching": true,
+            "ordering": true,
+            "info": true
+        });
     });
 </script>
-
