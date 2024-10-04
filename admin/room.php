@@ -17,13 +17,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Check if room already exists
             $checkQuery = $conn->query("SELECT * FROM roomlist WHERE room_id = '$room_id' OR room_name = '$room_name' AND dept_id = '$dept_id'");
             if ($checkQuery->num_rows > 0) {
-                echo 3; // Room already exists
+                $message = "Room already exists"; // Store error message
             } else {
                 // Insert new room
                 $conn->query("INSERT INTO roomlist (room_id, room_name, dept_id) VALUES ('$room_id', '$room_name', '$dept_id')");
-                echo 1; // Room successfully added
+                $message = "Room successfully added"; // Store success message
             }
-            exit;
         }
 
         // Update Room
@@ -34,19 +33,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Update room details
             $conn->query("UPDATE roomlist SET room_id = '$room_id', room_name = '$room_name' WHERE id = '$id'");
-            echo 2; // Room successfully updated
-            exit;
+            $message = "Room successfully updated"; // Store success message
         }
 
         // Delete Room
         if ($_POST['action'] === 'delete_room') {
             $id = $_POST['id'];
             $conn->query("DELETE FROM roomlist WHERE id = '$id'");
-            echo 1; // Room successfully deleted
-            exit;
+            $message = "Room successfully deleted"; // Store success message
         }
     }
 }
+
+// Fetch room list after form submission
+$rooms = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' ORDER BY id ASC");
 ?>
 
 <!-- Include SweetAlert CSS -->
@@ -84,11 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="hidden" name="action" id="form-action" value="save_room">
                                 <div class="form-group mb-3">
                                     <label class="form-label">Room ID</label>
-                                    <input type="text" class="form-control" name="room_id" id="room_id">
+                                    <input type="text" class="form-control" name="room_id" id="room_id" required>
                                 </div>
                                 <div class="form-group mb-3">
                                     <label class="form-label">Room</label>
-                                    <input type="text" class="form-control" name="room" id="room">
+                                    <input type="text" class="form-control" name="room" id="room" required>
                                 </div>
                             </form>
                         </div>
@@ -123,8 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <tbody>
                             <?php 
                                 $i = 1;
-                                $course = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' ORDER BY id ASC");
-                                while($row = $course->fetch_assoc()): ?>
+                                while($row = $rooms->fetch_assoc()): ?>
                                 <tr>
                                     <td class="text-center"><?php echo $row['room_id']; ?></td>
                                     <td>
@@ -157,13 +156,8 @@ $(document).ready(function() {
     $('#newEntryBtn').click(function() {
         $('#roomModal').modal('show');
         $('#form-action').val('save_room'); // Set action to save
+        $('#manage-room').get(0).reset(); // Reset form
     });
-
-    // Reset form function
-    function _reset() {
-        $('#manage-room').get(0).reset();
-        $('#manage-room input').val('');
-    }
 
     // Save Room
     $('#saveRoomBtn').click(function() {
@@ -208,10 +202,21 @@ $(document).ready(function() {
                     text: 'Room data successfully deleted.',
                     showConfirmButton: true
                 }).then(function() {
-                    location.reload();
+                    location.reload(); // Refresh the page to show updated room list
                 });
             }
         });
     }
 });
 </script>
+
+<?php if (isset($message)): ?>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: '<?php echo $message; ?>',
+        confirmButtonText: 'OK'
+    });
+</script>
+<?php endif; ?>
