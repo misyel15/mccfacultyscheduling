@@ -216,6 +216,7 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
 </div>
 
 <!-- Include script for handling form submission -->
+
 <script>
 $(document).ready(function() {
     $('#subjectTable').DataTable(); // Initialize DataTable
@@ -271,8 +272,38 @@ $(document).ready(function() {
         $('#subjectModal').modal('show'); // Show the modal
     });
 
-    // Additional Delete functionality can be added here
+    // Delete button click event
+    $('.delete_subject').click(function() {
+        const id = $(this).data('id');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will delete the subject permanently!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: 'ajax.php?action=delete_subject', // PHP file to handle delete request
+                    method: 'POST',
+                    data: { id: id }, // Send the subject ID to delete
+                    success: function(response) {
+                        if (response == 'success') {
+                            Swal.fire('Deleted!', 'Subject has been deleted.', 'success');
+                            setTimeout(() => {
+                                location.reload(); // Reload page to see changes
+                            }, 1000);
+                        } else {
+                            Swal.fire('Error!', response, 'error'); // Show error alert
+                        }
+                    }
+                });
+            }
+        });
+    });
 });
-
 </script>
+
 
