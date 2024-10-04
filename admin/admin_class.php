@@ -285,57 +285,6 @@ class Action {
 	}
 	
 	
-	function save_fees(){
-		extract($_POST);
-		$data = " year = '$year' ";
-		$data .= ", library = '$library' ";
-		$data .= ", computer = '$computer' ";
-		$data .= ", school_id = '$school_id' ";
-		$data .= ", athletic = '$athletic' ";
-		$data .= ", admission = '$admission' ";
-		$data .= ", development = '$development' ";
-		$data .= ", guidance = '$guidance' ";
-		$data .= ", handbook = '$handbook' ";
-		$data .= ", entrance = '$entrance' ";
-		$data .= ", registration = '$registration' ";
-		$data .= ", medical = '$medical' ";
-		$data .= ", cultural = '$cultural' ";
-		$data .= ", semester = '$semester' ";
-		$data .= ", course = '$course' ";
-			if(empty($id)){
-				$save = $this->db->query("INSERT INTO fees set $data");
-			}else{
-				$save = $this->db->query("UPDATE fees set $data where id = $id");
-			}
-		if($save)
-			return 1;
-	}
-	function save_room() {
-		extract($_POST);
-		$data = " room_name = '$room' ";
-		$data .= ", room_id = '$room_id' ";
-	
-		// Ensure dept_id is extracted from the session
-		$dept_id = $_SESSION['dept_id']; // Retrieve dept_id from session
-		$data .= ", dept_id = '$dept_id' "; // Add dept_id to the data string
-	
-		// Check for duplicate room name or ID within the same department
-		$check = $this->db->query("SELECT * FROM roomlist WHERE (room_name = '$room' OR room_id = '$room_id') AND dept_id = '$dept_id'");
-		if ($check->num_rows > 0) {
-			return 3; // Return a specific code for duplicate entry
-		}
-	
-		if (empty($id)) {
-			$save = $this->db->query("INSERT INTO roomlist SET $data");
-		} else {
-			$save = $this->db->query("UPDATE roomlist SET $data WHERE id = $id");
-		}
-	
-		if ($save) {
-			return 1; // Return 1 for successful save
-		}
-		return 0; // Return 0 if the save operation fails
-	}
 	
 	function save_timeslot() {
 		extract($_POST);
@@ -619,40 +568,7 @@ class Action {
 		return 0; // Return 0 if the save operation fails
 	}
 	
-	function save_roomscheduletth(){
-		extract($_POST);
-		$data = " timeslot_id = '$timeslot_id' ";
-		$data .= ", timeslot = '$timeslot' ";
-		$data .= ", rooms = '$room' ";
-		$data .= ", faculty = '$faculty' ";
-		$data .= ", semester = '$semester' ";
-		$data .= ", course = '$course' ";
-		$data .= ", subjects = '$subject' ";
-		//$rdata = implode($dow);
-		$data .= ", days = '$days' ";
-		if(empty($id)){
-			$query = $this->db->query("SELECT * FROM subjects WHERE subject='$subject'");
-			foreach ($query as $key) {
-			$status = $key['status'];
-			$newstats = $status - 1;
-			$subjectStats = "status =".$newstats;
-			$update = $this->db->query("UPDATE subjects set ".$subjectStats." where subject='$subject'");
-			}
-			$save = $this->db->query("INSERT INTO tthloading set ".$data);
-		}else{
-			$query = $this->db->query("SELECT * FROM subjects WHERE subject='$subject'");
-			foreach ($query as $key) {
-			$status = $key['status'];
-			$newstats = $status - 1;
-			$subjectStats = "status =".$newstats;
-			$update = $this->db->query("UPDATE subjects set ".$subjectStats." where subject='$subject'");
-			}
-			$save = $this->db->query("UPDATE tthloading set ".$data." where id=".$id);
-		}
-		if($save){
-			return 1;
-		}
-	}
+	
 	function save_schedule(){
 		extract($_POST);
 		$data = " faculty_id = '$faculty_id' ";
