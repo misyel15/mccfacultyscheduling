@@ -16,42 +16,82 @@ class Action {
         ob_end_flush();
     }
 	
-	
+    // Login function for general users
+    function login() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Sanitize user input to prevent XSS attacks
+            $username = htmlspecialchars(trim($_POST['username']), ENT_QUOTES, 'UTF-8');
+            $password = htmlspecialchars(trim($_POST['password']), ENT_QUOTES, 'UTF-8');
+            
+            // Prepare and execute the login query
+            $stmt = $this->db->prepare("
+                SELECT id, name, username, dept_id, type 
+                FROM users 
+                WHERE username = ? AND password = ?
+            ");
+            $hashed_password = md5($password); // It's better to use stronger hashing algorithms like password_hash()
+            $stmt->bind_param("ss", $username, $hashed_password);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-	function login_faculty() {
-		// Start the session if not already started
-		if (session_status() == PHP_SESSION_NONE) {
-			session_start();
-		}
-	
-		// Extract POST variables and sanitize input
-		$id_no = htmlspecialchars(trim($_POST['id_no']), ENT_QUOTES, 'UTF-8');
-	
-		// Prepare the SQL statement to prevent SQL injection
-		$stmt = $this->db->prepare("SELECT *, CONCAT(lastname, ', ', firstname, ' ', middlename) AS name FROM faculty WHERE id_no = ?");
-		$stmt->bind_param("s", $id_no);  // "s" indicates that the parameter is a string
-		$stmt->execute();
-	
-		// Get the result
-		$result = $stmt->get_result();
-	
-		if ($result->num_rows > 0) {
-			// Fetch the user data
-			$user_data = $result->fetch_assoc();
-	
-			// Store relevant user data in the session, escaping the output
-			foreach ($user_data as $key => $value) {
-				if ($key != 'password' && !is_numeric($key)) {
-					$_SESSION['login_' . $key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-				}
-			}
-			return 1;  // Successful login
-		} else {
-			return 3;  // Invalid ID number
-		}
-	}
-	
-	
+            if ($result->num_rows > 0) {
+                $user_data = $result->fetch_assoc();
+
+                // Store only necessary user information in the session
+                $_SESSION['user_id'] = $user_data['id'];
+                $_SESSION['dept_id'] = $user_data['dept_id'];
+                $_SESSION['username'] = htmlspecialchars($user_data['username'], ENT_QUOTES, 'UTF-8'); // Prevent XSS
+                $_SESSION['name'] = htmlspecialchars($user_data['name'], ENT_QUOTES, 'UTF-8'); // Prevent XSS
+                $_SESSION['login_type'] = $user_data['type'];
+
+                // Check if user is of type 1 (Admin)
+                if ($_SESSION['login_type'] != 1) {
+                    session_unset(); // Clear session if user is not admin
+                    echo 2; // User is not allowed
+                } else {
+                    echo 1; // Successful login
+                }
+            } else {
+                echo 3; // Invalid username/password
+            }
+        }
+    }
+
+    // Login function for faculty members
+    function login_faculty() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Sanitize and extract POST variables
+            $id_no = htmlspecialchars(trim($_POST['id_no']), ENT_QUOTES, 'UTF-8');
+
+            // Prepare SQL statement to prevent SQL injection
+            $stmt = $this->db->prepare("
+                SELECT *, CONCAT(lastname, ', ', firstname, ' ', middlename) AS name 
+                FROM faculty 
+                WHERE id_no = ?
+            ");
+            $stmt->bind_param("s", $id_no);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                // Fetch the faculty data
+                $user_data = $result->fetch_assoc();
+
+                // Store relevant user data in session, skipping password field
+                foreach ($user_data as $key => $value) {
+                    if ($key != 'password' && !is_numeric($key)) {
+                        $_SESSION['login_' . $key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                    }
+                }
+                return 1; // Successful login
+            } else {
+                return 3; // Invalid ID number
+            }
+        }
+    }
+}
+
+
 	function logout(){
 		session_destroy();
 		foreach ($_SESSION as $key => $value) {
