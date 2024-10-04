@@ -1,15 +1,23 @@
 <IfModule mod_rewrite.c>
-Options +FollowSymLinks
-RewriteEngine On
+    Options +FollowSymLinks
+    RewriteEngine On
 
-RewriteCond %{REQUEST_URI} !^/public/ 
+    # Check if the request is not for the /public directory
+    RewriteCond %{REQUEST_URI} !^/public/
+    
+    # Check if the requested filename is not a directory
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Check if the requested filename is not a file
+    RewriteCond %{REQUEST_FILENAME} !-f
 
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME} !-f
+    # Rewrite the request to the /public directory
+    RewriteRule ^(.*)$ public/$1 [L]
 
-
-
-RewriteRule ^(.*)$ /public/$1 
-#RewriteRule ^ index.php [L]
-RewriteRule ^(/)?$ public/index.php [L] 
+    # Serve the index.php file if the request is for the root
+    RewriteRule ^(/)?$ public/index.php [L]
 </IfModule>
+
+# Error documents (optional)
+ErrorDocument 404 /public/404.php
+ErrorDocument 500 /public/500.php
