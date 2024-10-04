@@ -1,11 +1,12 @@
 <?php
-session_start();
+session_start(); // Start the session
 include 'db_connect.php'; 
 
+// Check if the form was submitted via AJAX
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sanitize user input to prevent XSS attacks
-    $username = htmlspecialchars(trim($_POST['username']));
-    $password = htmlspecialchars(trim($_POST['password']));
+    // Extract the posted values
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
     // Prepare and execute the login query
     $stmt = $conn->prepare("
@@ -24,12 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Store only necessary user information in the session
         $_SESSION['user_id'] = $user_data['id'];
         $_SESSION['dept_id'] = $user_data['dept_id'];
-        $_SESSION['username'] = htmlspecialchars($user_data['username']); // Prevent XSS when outputting username
-        $_SESSION['name'] = htmlspecialchars($user_data['name']); // Prevent XSS when outputting name
-        $_SESSION['login_type'] = $user_data['type'];
-
+        $_SESSION['username'] = $user_data['username'];
+        $_SESSION['name'] = $user_data['name'];
+        $_SESSION['login_type'] = $user_data['type']; // Store user type for permission checks
+       
+        // Additional check for user type (if not type 1, clear session and return error)
         if ($_SESSION['login_type'] != 1) {
-            session_unset();
+            session_unset(); // Clear all session data
             echo 2; // User is not allowed
         } else {
             echo 1; // Successful login
@@ -37,10 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         echo 3; // Invalid username/password
     }
-    exit;
+    exit; // Exit after handling the AJAX request
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -79,7 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Include SweetAlert CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
 </head>
-
 <style>
 .password-container {
     position: relative;
@@ -213,67 +213,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         title: 'Oops...',
                         text: 'Something went wrong. Please try again later.'
                     });
-                    $('#login-form button[type="submit"]').removeAttr('disabled').html('Login');
+                    $('#login-form button[type="submit"]').removeAttr('disabled').html('sign in');
                 },
                 success: function(resp) {
                     if (resp == 1) {
                         // Display SweetAlert success message
                         Swal.fire({
                             icon: 'success',
-                            title: 'Login Successful',
-                            text: 'Redirecting...',
+                            title: 'Success',
+                            text: 'Login successful. Redirecting...',
                             showConfirmButton: true
                         }).then(() => {
-                            location.href = 'home.php'; // Redirect to the homepage
+                            location.href = 'home.php';
                         });
                     } else if (resp == 2) {
-                        // Display SweetAlert for access denied
+                        // Display SweetAlert error message for user type
                         Swal.fire({
                             icon: 'error',
                             title: 'Access Denied',
                             text: 'You do not have permission to access this area.'
                         });
-                        $('#login-form button[type="submit"]').removeAttr('disabled').html('Login');
+                        $('#login-form button[type="submit"]').removeAttr('disabled').html('sign in');
                     } else {
-                        // Display SweetAlert for login failure
+                        // Display SweetAlert error message for incorrect login
                         Swal.fire({
                             icon: 'error',
                             title: 'Login Failed',
                             text: 'Username or password is incorrect.'
                         });
-                        $('#login-form button[type="submit"]').removeAttr('disabled').html('Login');
+                        $('#login-form button[type="submit"]').removeAttr('disabled').html('sign in');
                     }
                 }
             });
         });
     });
-    </script>
-
-    <!-- Anti-inspect JavaScript -->
-    <script>
-    // Disable right-click
-    document.addEventListener('contextmenu', function (e) {
-        e.preventDefault();
-    }, false);
-
-    // Disable F12 (Inspect Element) and Ctrl+Shift+I
-    document.addEventListener('keydown', function (e) {
-        // F12
-        if (e.keyCode === 123) {
-            e.preventDefault();
-        }
-        // Ctrl + Shift + I
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-            e.preventDefault();
-        }
-    }, false);
-
-    // Disable Ctrl+U (View Source)
-    document.addEventListener('keydown', function (e) {
-        if (e.ctrlKey && e.keyCode === 85) {
-            e.preventDefault();
-        }
-    }, false);
     </script>
 </body>
 </html>
