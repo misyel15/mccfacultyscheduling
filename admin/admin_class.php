@@ -418,13 +418,18 @@ class Action {
 			return 1;
 		}
 	}
-	function delete_timeslot(){
-		extract($_POST);
-		$delete = $this->db->query("DELETE FROM timeslot where id = ".$id);
-		if($delete){
-			return 1;
-		}
-	}
+	if ($_GET['action'] == 'delete_timeslot') {
+    $id = $_POST['id'];
+    $delete_query = $conn->query("DELETE FROM timeslot WHERE id = $id");
+    
+    if ($delete_query) {
+        echo 1; // Success
+    } else {
+        echo 0; // Failure
+    }
+    exit();
+}
+
 	function delete_load(){
 		extract($_POST);
 		$scode = "";
