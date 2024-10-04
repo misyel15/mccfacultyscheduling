@@ -140,7 +140,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         }
 
         $.ajax({
-            url: 'ajax.php?save_course',
+            url: 'ajax.php?action=save_course',
             data: new FormData($(this)[0]),
             cache: false,
             contentType: false,
@@ -204,7 +204,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 
     function delete_course(id) {
         $.ajax({
-            url: 'ajax.php?delete_course',
+            url: 'ajax.php?action=delete_course',
             method: 'POST',
             data: { id: id },
             success: function(resp) {
