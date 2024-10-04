@@ -156,7 +156,7 @@ $('#manage-timeslot').submit(function(e) {
     }
     
     $.ajax({
-        url: 'ajax.php?action=save_timeslot',
+        url: 'url: 'https://mccfacultyschedulin.com/admin/ajax.php?action=save_timeslot',
         data: new FormData($(this)[0]),
         cache: false,
         contentType: false,
