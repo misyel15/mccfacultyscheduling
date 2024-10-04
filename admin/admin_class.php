@@ -50,7 +50,6 @@ class Action {
 			return 3;  // Invalid ID number
 		}
 	}
-	
 	function logout(){
 		session_destroy();
 		foreach ($_SESSION as $key => $value) {
