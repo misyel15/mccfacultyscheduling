@@ -39,6 +39,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         <div class="modal-body">
                             <form action="" id="manage-timeslot">
                                 <input type="hidden" name="id">
+                                <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
                                 <div class="form-group">
                                     <label class="control-label">Time ID</label>
                                     <input type="text" class="form-control" name="time_id" id="time_id" required>
@@ -92,7 +93,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                             </thead>
                             <tbody>
                                 <?php 
-                                $timeslot = $conn->query("SELECT * FROM timeslot ORDER BY time_id ASC");
+                                $timeslot = $conn->query("SELECT * FROM timeslot WHERE dept_id = '$dept_id' ORDER BY time_id ASC");
                                 while ($row = $timeslot->fetch_assoc()): ?>
                                 <tr>
                                     <td class="text-center"><?php echo $row['time_id']; ?></td>
