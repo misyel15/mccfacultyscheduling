@@ -212,7 +212,7 @@ $(document).ready(function() {
 
     function delete_room(id) {
         $.ajax({
-            url: 'ajax.php?action=delete_room',
+            url: 'ajax.php=delete_room',
             method: 'POST',
             data: { id: id },
             success: function(resp) {
