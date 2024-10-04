@@ -2,14 +2,14 @@
     Options +FollowSymLinks
     RewriteEngine On
 
-    # Ensure we don't rewrite requests for the public directory
-    RewriteCond %{REQUEST_URI} !^/public/ 
+    # Prevent rewriting for requests to the public directory
+    RewriteCond %{REQUEST_URI} !^/public/
 
-    # Allow existing directories and files to be served normally
+    # Allow existing directories and files to be accessed
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
 
-    # Redirect everything else to the public directory
+    # Redirect all other requests to the public directory
     RewriteRule ^(.*)$ public/$1 [L]
 
     # Handle requests to the root URL
