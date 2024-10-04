@@ -4,8 +4,44 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
-// Example: $_SESSION['dept_id'] = $user['dept_id'];
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
+
+// Handle form submissions for saving, updating, and deleting courses
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['action'])) {
+        $action = $_POST['action'];
+
+        if ($action === 'save_course') {
+            // Save new course
+            $course = $_POST['course'];
+            $description = $_POST['description'];
+
+            // Check if the course already exists
+            $check_query = $conn->query("SELECT * FROM courses WHERE course = '$course' AND dept_id = '$dept_id'");
+            if ($check_query->num_rows > 0) {
+                echo 0; // Course already exists
+            } else {
+                $conn->query("INSERT INTO courses (course, description, dept_id) VALUES ('$course', '$description', '$dept_id')");
+                echo 1; // Course successfully added
+            }
+        } elseif ($action === 'edit_course') {
+            // Update existing course
+            $id = $_POST['id'];
+            $course = $_POST['course'];
+            $description = $_POST['description'];
+
+            $conn->query("UPDATE courses SET course = '$course', description = '$description' WHERE id = '$id'");
+            echo 2; // Course successfully updated
+        } elseif ($action === 'delete_course') {
+            // Delete course
+            $id = $_POST['id'];
+            $conn->query("DELETE FROM courses WHERE id = '$id'");
+            echo 1; // Course successfully deleted
+        }
+        exit; // Exit after handling the request
+    }
+}
+
 ?>
 
 <!-- Include SweetAlert CSS -->
@@ -84,10 +120,11 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <form action="" id="manage-course">
+                        <form action="" method="POST" id="manage-course">
                             <div class="modal-body">
                                 <input type="hidden" name="id">
                                 <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
+                                <input type="hidden" name="action" value="save_course"> <!-- Default action -->
                                 <div class="form-group">
                                     <label class="control-label">Course</label>
                                     <input type="text" class="form-control" name="course" required>
@@ -119,71 +156,9 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 <script>
     function _reset() {
         $('#manage-course').get(0).reset();
-        $('#manage-course input,#manage-course textarea').val('');
+        $('#manage-course input, #manage-course textarea').val('');
+        $("input[name='action']").val('save_course'); // Reset action to default
     }
-    $('#manage-course').submit(function(e) {
-    e.preventDefault();
-
-    // Validation: Check if required fields are filled
-    let course = $("input[name='course']").val().trim();
-    let description = $("textarea[name='description']").val().trim();
-
-    if (course === '' || description === '') {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Warning!',
-            text: 'Please fill out all required fields.',
-            showConfirmButton: true
-        });
-        return; // Stop the form submission if validation fails
-    }
-
-    $.ajax({
-        url: 'ajax.php?action=save_course',
-        data: new FormData($(this)[0]),
-        cache: false,
-        contentType: false,
-        processData: false,
-        method: 'POST',
-        success: function(resp) {
-            if (resp == 1) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Data successfully added!',
-                    showConfirmButton: true
-                }).then(function() {
-                    location.reload();
-                });
-            } else if (resp == 2) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Data successfully updated!',
-                    showConfirmButton: true
-                }).then(function() {
-                    location.reload();
-                });
-            } else if (resp == 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Course already exists or required fields are empty!',
-                    showConfirmButton: true
-                });
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error("AJAX Error: ", error); // Log AJAX error
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'An error occurred while processing your request.',
-                showConfirmButton: true
-            });
-        }
-    });
-});
 
     $('.edit_course').click(function() {
         _reset();
@@ -191,6 +166,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         cat.find("[name='id']").val($(this).attr('data-id'));
         cat.find("[name='course']").val($(this).attr('data-course'));
         cat.find("[name='description']").val($(this).attr('data-description'));
+        $("input[name='action']").val('edit_course'); // Set action to edit
     });
 
     $('.delete_course').click(function() {
@@ -211,10 +187,11 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
     });
 
     function delete_course(id) {
+        // Use form submission for delete action
         $.ajax({
-            url: 'ajax.php?action=delete_course',
+            url: '',
             method: 'POST',
-            data: { id: id },
+            data: { action: 'delete_course', id: id },
             success: function(resp) {
                 if (resp == 1) {
                     Swal.fire({
