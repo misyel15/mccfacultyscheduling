@@ -151,43 +151,41 @@ if (!$dept_id) {
             return; // Stop the form submission if validation fails
         }
 
-        $.ajax({
-            url: 'ajax.php?action=save_course',
-            data: new FormData($(this)[0]),
-            cache: false,
-            contentType: false,
-            processData: false,
-            method: 'POST',
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Data successfully added!',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 2) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Data successfully updated!',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Course already exists!',
-                        showConfirmButton: true
-                    });
-                }
+        $('#course-form').submit(function(e) {
+    e.preventDefault();
+
+    $.ajax({
+        url: 'ajax.php?action=save_course',
+        method: 'POST',
+        data: $(this).serialize(),
+        success: function(resp) {
+            if (resp == 1) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Course added successfully!',
+                    showConfirmButton: true
+                }).then(function() {
+                    location.reload();
+                });
+            } else if (resp == 2) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Course updated successfully!',
+                    showConfirmButton: true
+                }).then(function() {
+                    location.reload();
+                });
+            } else if (resp == 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Course code or name already exists.',
+                    showConfirmButton: true
+                });
             }
-        });
+        }
     });
+});
 
     $('.edit_course').click(function() {
         _reset();
