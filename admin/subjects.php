@@ -11,8 +11,6 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <!-- Include DataTables CSS (optional) -->
 <link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
-<!-- Include SweetAlert JS -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Include jQuery and Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -104,9 +102,12 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                                             <button class="btn btn-sm btn-primary edit_subject" type="button" data-id="<?php echo $row['id']; ?>" data-subject="<?php echo $row['subject']; ?>" data-description="<?php echo $row['description']; ?>" data-units="<?php echo $row['total_units']; ?>" data-lecunits="<?php echo $row['Lec_Units']; ?>" data-labunits="<?php echo $row['Lab_Units']; ?>" data-course="<?php echo $row['course']; ?>" data-year="<?php echo $row['year']; ?>" data-semester="<?php echo $row['semester']; ?>" data-special="<?php echo $row['specialization']; ?>" data-hours="<?php echo $row['hours']; ?>" data-toggle="modal" data-target="#subjectModal">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
-                                            <button class="btn btn-sm btn-danger delete_subject" type="button" data-id="<?php echo $row['id']; ?>">
-                                                <i class="fas fa-trash-alt"></i> Delete
-                                            </button>
+                                            <form method="POST" action="delete_subject.php" style="display:inline-block;">
+                                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                                <button class="btn btn-sm btn-danger delete_subject" type="submit">
+                                                    <i class="fas fa-trash-alt"></i> Delete
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                     <?php endwhile; ?>
@@ -128,7 +129,7 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <form action="" id="manage-subject">
+                        <form action="save_subject.php" method="POST">
                             <div class="modal-body">
                                 <input type="hidden" name="id">
                                 <div class="form-group">
@@ -210,69 +211,66 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                     </div>
                 </div>
             </div>
-            <!-- End Modal -->
+            <!-- Modal -->
         </div>
     </div>
 </div>
 
-<!-- Include script for handling form submission -->
 <script>
-$(document).ready(function() {
-    $('#subjectTable').DataTable(); // Initialize DataTable
+    $(document).ready(function() {
+        $('#subjectTable').DataTable();
 
-    // Handle form submission
-    $('#manage-subject').submit(function(e) {
-        e.preventDefault(); // Prevent default form submission
-        $.ajax({
-            url: 'save_subject.php', // PHP file to handle form submission
-            method: 'POST',
-            data: $(this).serialize(), // Serialize form data
-            success: function(response) {
-                if (response == 'success') {
-                    Swal.fire('Success!', 'Subject has been saved.', 'success');
-                    $('#subjectModal').modal('hide');
-                    setTimeout(() => {
-                        location.reload(); // Reload page to see changes
-                    }, 1000);
-                } else {
-                    Swal.fire('Error!', response, 'error'); // Show error alert
-                }
-            }
+        // Handle edit button click
+        $('.edit_subject').on('click', function() {
+            var id = $(this).data('id');
+            var subject = $(this).data('subject');
+            var description = $(this).data('description');
+            var total_units = $(this).data('units');
+            var Lec_Units = $(this).data('lecunits');
+            var Lab_Units = $(this).data('labunits');
+            var hours = $(this).data('hours');
+            var course = $(this).data('course');
+            var year = $(this).data('year');
+            var semester = $(this).data('semester');
+            var specialization = $(this).data('special');
+
+            // Populate form fields
+            $('input[name=id]').val(id);
+            $('input[name=subject]').val(subject);
+            $('textarea[name=description]').val(description);
+            $('input[name=total_units]').val(total_units);
+            $('input[name=Lec_Units]').val(Lec_Units);
+            $('input[name=Lab_Units]').val(Lab_Units);
+            $('input[name=hours]').val(hours);
+            $('select[name=course]').val(course);
+            $('input[name=year]').val(year);
+            $('input[name=semester]').val(semester);
+            $('input[name=specialization]').val(specialization);
         });
+
+        // Filter table by course and semester
+        $('#filter-course').on('change', function() {
+            filterTable();
+        });
+        $('#filter-semester').on('change', function() {
+            filterTable();
+        });
+
+        function filterTable() {
+            var filterCourse = $('#filter-course').val().toLowerCase();
+            var filterSemester = $('#filter-semester').val().toLowerCase();
+
+            $('#subjectTable tbody tr').filter(function() {
+                $(this).toggle(
+                    ($(this).data('course').toLowerCase().indexOf(filterCourse) > -1 || filterCourse === '') &&
+                    ($(this).data('semester').toLowerCase().indexOf(filterSemester) > -1 || filterSemester === '')
+                );
+            });
+        }
     });
-
-    // Edit button click event
-    $('.edit_subject').click(function() {
-        const id = $(this).data('id');
-        const subject = $(this).data('subject');
-        const description = $(this).data('description');
-        const totalUnits = $(this).data('units');
-        const lecUnits = $(this).data('lecunits');
-        const labUnits = $(this).data('labunits');
-        const course = $(this).data('course');
-        const year = $(this).data('year');
-        const semester = $(this).data('semester');
-        const specialization = $(this).data('special');
-        const hours = $(this).data('hours');
-        
-        // Populate modal fields
-        $('#subjectModal input[name="id"]').val(id);
-        $('#subjectModal input[name="subject"]').val(subject);
-        $('#subjectModal textarea[name="description"]').val(description);
-        $('#subjectModal input[name="total_units"]').val(totalUnits);
-        $('#subjectModal input[name="Lec_Units"]').val(lecUnits);
-        $('#subjectModal input[name="Lab_Units"]').val(labUnits);
-        $('#subjectModal input[name="hours"]').val(hours);
-        $('#subjectModal select[name="course"]').val(course);
-        $('#subjectModal input[name="year"]').val(year);
-        $('#subjectModal input[name="semester"]').val(semester);
-        $('#subjectModal input[name="specialization"]').val(specialization);
-
-        $('#subjectModal').modal('show'); // Show the modal
-    });
-
-    // Additional Delete functionality can be added here
-});
-
 </script>
+
+<!-- Include SweetAlert JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+
 
