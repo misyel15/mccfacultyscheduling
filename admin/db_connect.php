@@ -13,12 +13,3 @@ $database = 'u510162695_scheduling_db'; // Your database name
 
 // Create the connection
 $conn = new mysqli($host, $username, $password, $database, $port);
-
-// Check the connection
-if ($conn->connect_error) {
-    die('Connection failed: ' . $conn->connect_error . ' (' . $conn->connect_errno . ')');
-} else {
-    echo 'Database connected successfully.';
-}
-
-// Use the connection ($conn) for your queries
