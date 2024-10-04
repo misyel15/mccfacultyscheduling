@@ -41,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit; // Exit after handling the request
     }
 }
+
 ?>
 
 <!-- Include SweetAlert CSS -->
@@ -168,12 +169,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $("input[name='action']").val('edit_course'); // Set action to edit
     });
 
+    $('.delete_course').click(function() {
+        var id = $(this).attr('data-id');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                delete_course(id);
+            }
+        });
+    });
+
+    function delete_course(id) {
+        // Use form submission for delete action
+        $.ajax({
+            url: '', // Update to your script URL if needed
+            method: 'POST',
+            data: { action: 'delete_course', id: id },
+            success: function(resp) {
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Data successfully deleted.',
+                        showConfirmButton: true
+                    }).then(function() {
+                        location.reload();
+                    });
+                }
+            }
+        });
+    }
+
+    // Handle form submission for saving/editing
     $(document).on('submit', '#manage-course', function(e) {
         e.preventDefault(); // Prevent default form submission
         const formData = $(this).serialize(); // Serialize the form data
 
         $.ajax({
-            url: '', // Update to the correct URL if necessary
+            url: '', // Update to your script URL if needed
             method: 'POST',
             data: formData,
             success: function(resp) {
@@ -203,56 +243,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         location.reload(); // Reload the page to see the changes
                     });
                 }
+            },
+            error: function(xhr, status, error) {
+                console.error(error); // Log any errors for debugging
             }
         });
     });
 
-    $('.delete_course').click(function() {
-        var id = $(this).attr('data-id');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                delete_course(id);
-            }
-        });
-    });
-
-    function delete_course(id) {
-        // Use form submission for delete action
-        $.ajax({
-            url: '',
-            method: 'POST',
-            data: { action: 'delete_course', id: id },
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: 'Data successfully deleted.',
-                        showConfirmButton: true
-                    }).then(function() {
-                        location.reload();
-                    });
-                }
-            }
-        });
-    }
-
-    // Initialize DataTable
     $(document).ready(function() {
-        $('#course-table').DataTable({
-            "paging": true,
-            "searching": true,
-            "ordering": true,
-            "info": true
-        });
+        $('#course-table').DataTable(); // Initialize DataTables
     });
 </script>
 
