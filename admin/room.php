@@ -8,10 +8,6 @@ if (is_null($dept_id)) {
     die("Invalid department ID");
 }
 
-// Initialize success and error messages
-$success = '';
-$error = '';
-
 // Handle form submissions for adding or updating rooms
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize and validate inputs
@@ -39,13 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = $save ? "Room successfully updated." : "Failed to update room.";
         }
     }
-}
-
-// Handle room deletion
-if (isset($_POST['delete_id'])) {
-    $delete_id = intval($_POST['delete_id']);
-    $conn->query("DELETE FROM roomlist WHERE id = $delete_id");
-    $success = "Room successfully deleted.";
 }
 
 // Fetch room list
@@ -104,12 +93,6 @@ $courses = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' ORDER
                     <b>Room List</b>
                 </div>
                 <div class="card-body">
-                    <?php if ($success): ?>
-                        <div class="alert alert-success"><?php echo $success; ?></div>
-                    <?php endif; ?>
-                    <?php if ($error): ?>
-                        <div class="alert alert-danger"><?php echo $error; ?></div>
-                    <?php endif; ?>
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover" id="roomTable">
                             <thead>
