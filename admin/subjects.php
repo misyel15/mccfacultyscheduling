@@ -5,7 +5,64 @@ include 'includes/header.php';
 
 // Assuming the user department ID is stored in the session after login
 $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
+
+
+if (isset($_POST['action'])) {
+    $action = $_POST['action'];
+
+    if ($action == 'save_subject') {
+        // Save or Update Subject
+        $id = $_POST['id'];
+        $subject = $_POST['subject'];
+        $description = $_POST['description'];
+        $total_units = $_POST['total_units'];
+        $Lec_Units = $_POST['Lec_Units'];
+        $Lab_Units = $_POST['Lab_Units'];
+        $course = $_POST['course'];
+        $year = $_POST['year'];
+        $semester = $_POST['semester'];
+        $specialization = $_POST['specialization'];
+        $hours = $_POST['hours'];
+
+        if (empty($id)) {
+            // Insert new subject
+            $sql = "INSERT INTO subjects (subject, description, total_units, Lec_Units, Lab_Units, course, year, semester, specialization, hours, dept_id) 
+                    VALUES ('$subject', '$description', '$total_units', '$Lec_Units', '$Lab_Units', '$course', '$year', '$semester', '$specialization', '$hours', '{$_SESSION['dept_id']}')";
+        } else {
+            // Update existing subject
+            $sql = "UPDATE subjects SET 
+                    subject = '$subject', 
+                    description = '$description', 
+                    total_units = '$total_units', 
+                    Lec_Units = '$Lec_Units', 
+                    Lab_Units = '$Lab_Units', 
+                    course = '$course', 
+                    year = '$year', 
+                    semester = '$semester', 
+                    specialization = '$specialization', 
+                    hours = '$hours' 
+                    WHERE id = '$id'";
+        }
+
+        if ($conn->query($sql)) {
+            echo 'success';
+        } else {
+            echo 'Error: ' . $conn->error;
+        }
+    } elseif ($action == 'delete_subject') {
+        // Delete subject
+        $id = $_POST['id'];
+        $sql = "DELETE FROM subjects WHERE id = '$id'";
+        if ($conn->query($sql)) {
+            echo 'success';
+        } else {
+            echo 'Error: ' . $conn->error;
+        }
+    }
+    exit;
+}
 ?>
+
 
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -220,13 +277,16 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
 $(document).ready(function() {
     $('#subjectTable').DataTable(); // Initialize DataTable
 
-    // Handle form submission
+    // Handle form submission (Save/Edit Subject)
     $('#manage-subject').submit(function(e) {
         e.preventDefault(); // Prevent default form submission
+        var formData = $(this).serialize(); // Serialize form data
+        formData += '&action=save_subject'; // Add action to the form data
+
         $.ajax({
             url: '', // PHP file to handle form submission
             method: 'POST',
-            data: $(this).serialize(), // Serialize form data
+            data: formData, // Send form data along with action
             success: function(response) {
                 if (response == 'success') {
                     Swal.fire('Success!', 'Subject has been saved.', 'success');
@@ -271,8 +331,39 @@ $(document).ready(function() {
         $('#subjectModal').modal('show'); // Show the modal
     });
 
-    // Additional Delete functionality can be added here
+    // Delete button click event
+    $('.delete_subject').click(function() {
+        const id = $(this).data('id');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '', // PHP file to handle delete
+                    method: 'POST',
+                    data: { id: id, action: 'delete_subject' },
+                    success: function(response) {
+                        if (response == 'success') {
+                            Swal.fire('Deleted!', 'Subject has been deleted.', 'success');
+                            setTimeout(() => {
+                                location.reload(); // Reload page to see changes
+                            }, 1000);
+                        } else {
+                            Swal.fire('Error!', response, 'error'); // Show error alert
+                        }
+                    }
+                });
+            }
+        });
+    });
 });
+
 
 </script>
 
