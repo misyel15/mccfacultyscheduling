@@ -4,7 +4,6 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
-// Example: $_SESSION['dept_id'] = $user['dept_id'];
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 ?>
 <!-- Include SweetAlert CSS -->
@@ -58,7 +57,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <label for="cyear" class="col-sm-3 control-label">Year</label>
                                     <div class="col-sm-12">
-                                        <select class="form-control" name="cyear" id="cyear">
+                                        <select class="form-control" name="cyear" id="cyear" required>
                                             <option value="" disabled selected>Select Year</option>
                                             <option value="1st">1st</option>
                                             <option value="2nd">2nd</option>
@@ -70,7 +69,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Section</label>
-                                        <input type="text" class="form-control" name="section" id="section">
+                                        <input type="text" class="form-control" name="section" id="section" required>
                                     </div>
                                 </div>
                             </form>
@@ -151,6 +150,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             processData: false,
             method: 'POST',
             success: function(resp) {
+                console.log(resp); // Check the response in the console
                 if (resp == 1) {
                     Swal.fire({
                         icon: 'success',
@@ -177,11 +177,18 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         text: 'Section already exists for the given course and year.',
                         showConfirmButton: true
                     });
-                } else {
+                } else if (resp == 4) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Warning!',
                         text: 'Please fill out all required fields.',
+                        showConfirmButton: true
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An unexpected error occurred.',
                         showConfirmButton: true
                     });
                 }
@@ -220,24 +227,31 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         $.ajax({
             url: 'ajax.php?action=delete_section',
             method: 'POST',
-            data: { id: id },
+            data: {id: id},
             success: function(resp) {
                 if (resp == 1) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Deleted!',
-                        text: 'Data successfully deleted.',
-                        showConfirmButton: true,
+                        text: 'Section has been deleted.',
+                        showConfirmButton: false,
+                        timer: 1500
                     }).then(function() {
                         location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An unexpected error occurred.',
+                        showConfirmButton: true
                     });
                 }
             }
         });
     }
 
-    // Initialize DataTable
     $(document).ready(function() {
-        $('#sectionTable').DataTable();
+        $('#sectionTable').DataTable(); // Initialize DataTable if you included it
     });
 </script>
