@@ -1,242 +1,109 @@
 <?php
-ob_start();
-$action = $_GET['action'];
-include 'admin_class.php';
-$crud = new Action();
-if($action == 'login'){
-	$login = $crud->login();
-	if($login)
-		echo $login;
-}
-if($action == 'login_faculty'){
-	$login_faculty = $crud->login_faculty();
-	if($login_faculty)
-		echo $login_faculty;
-}
-if($action == 'login2'){
-	$login = $crud->login2();
-	if($login)
-		echo $login;
-}
-if($action == 'logout'){
-	$logout = $crud->logout();
-	if($logout)
-		echo $logout;
-}
-if($action == 'logout2'){
-	$logout = $crud->logout2();
-	if($logout)
-		echo $logout;
-}
-if($action == 'save_user'){
-	$save = $crud->save_user();
-	if($save)
-		echo $save;
-}
-if($action == 'delete_user'){
-	$save = $crud->delete_user();
-	if($save)
-		echo $save;
-}
-if($action == 'signup'){
-	$save = $crud->signup();
-	if($save)
-		echo $save;
-}
-if($action == 'update_account'){
-	$save = $crud->update_account();
-	if($save)
-		echo $save;
-}
-if($action == "save_settings"){
-	$save = $crud->save_settings();
-	if($save)
-		echo $save;
-}
-if($action == "save_course"){
-	$save = $crud->save_course();
-	if($save)
-		echo $save;
-}
+class Action {
+    private $conn;
 
-if($action == "delete_course"){
-	$delete = $crud->delete_course();
-	if($delete)
-		echo $delete;
-}
-if($action == "delete_load"){
-	$delete = $crud->delete_load();
-	if($delete)
-		echo $delete;
-}
-if($action == "delete_MW"){
-	$delete = $crud->delete_MW();
-	if($delete)
-		echo $delete;
-}
-if($action == "delete_TTh"){
-	$delete = $crud->delete_TTh();
-	if($delete)
-		echo $delete;
-}
-if($action == "delete_Fri"){
-	$delete = $crud->delete_Fri();
-	if($delete)
-		echo $delete;
-}
-if($action == "delete_Sat"){
-	$delete = $crud->delete_Sat();
-	if($delete)
-		echo $delete;
-}
-if($action == "save_subject"){
-	$save = $crud->save_subject();
-	if($save)
-		echo $save;
-}
-if($action == "save_fees"){
-	$save = $crud->save_fees();
-	if($save)
-		echo $save;
-}
+    public function __construct() {
+        // Initialize database connection (update with your DB details)
+        $this->conn = new mysqli("localhost", "username", "password", "database");
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
 
-if($action == "delete_subject"){
-	$delete = $crud->delete_subject();
-	if($delete)
-		echo $delete;
-}
-if($action == "delete_fees"){
-	$delete = $crud->delete_fees();
-	if($delete)
-		echo $delete;
-}
-if($action == "delete_schedule"){
-	$delete = $crud->delete_schedule();
-	if($delete)
-		echo $delete;
-}
-if($action == "save_room"){
-	$save = $crud->save_room();
-	if($save)
-		echo $save;
-}if($action == "save_timeslot"){
-	$save = $crud->save_timeslot();
-	if($save)
-		echo $save;
-}
-if($action == "delete_room"){
-	$delete = $crud->delete_room();
-	if($delete)
-		echo $delete;
-}
-if($action == "delete_timeslot"){
-	$delete = $crud->delete_timeslot();
-	if($delete)
-		echo $delete;
-}
-if($action == "save_section"){
-	$save = $crud->save_section();
-	if($save)
-		echo $save;
-}
-if($action == "delete_section"){
-	$delete = $crud->delete_section();
-	if($delete)
-		echo $delete;
-}
-if($action == "save_faculty"){
-	$save = $crud->save_faculty();
-	if($save)
-		echo $save;
-}
-if($action == "delete_faculty"){
-	$save = $crud->delete_faculty();
-	if($save)
-		echo $save;
-}
+    public function login() {
+        // Example login function
+        if (isset($_POST['username']) && isset($_POST['password'])) {
+            $username = $this->conn->real_escape_string($_POST['username']);
+            $password = $this->conn->real_escape_string($_POST['password']);
 
-if($action == "save_schedule"){
-	$save = $crud->save_schedule();
-	if($save)
-		echo $save;
-}
-if($action == "save_roomschedule"){
-	$save = $crud->save_roomschedule();
-	if($save)
-		echo $save;
-}
-if($action == "save_roomscheduletth"){
-	$save = $crud->save_roomscheduletth();
-	if($save)
-		echo $save;
-}
-if($action == "delete_schedule"){
-	$save = $crud->delete_schedule();
-	if($save)
-		echo $save;
-}
-if($action == "get_schedule"){
-	$get = $crud->get_schecdule();
-	if($get)
-		echo $get;
-}
-if($action == "get_year"){
-	$get = $crud->get_year();
-	if($get)
-		echo $get;
-}
-if($action == "delete_forum"){
-	$save = $crud->delete_forum();
-	if($save)
-		echo $save;
-}
+            // Hash password if necessary (use the same method as during registration)
+            $query = "SELECT * FROM users WHERE username = '$username' AND password = MD5('$password')";
+            $result = $this->conn->query($query);
 
-if($action == "save_comment"){
-	$save = $crud->save_comment();
-	if($save)
-		echo $save;
-}
-if($action == "delete_comment"){
-	$save = $crud->delete_comment();
-	if($save)
-		echo $save;
+            if ($result && $result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+                $_SESSION['login_id'] = $row['id']; // Store user ID in session
+                return 1; // Success
+            } else {
+                return 0; // Invalid credentials
+            }
+        }
+        return 'No credentials provided'; // Handle case with no credentials
+    }
 
-}
+    public function login_faculty() {
+        // Faculty login function (similar to login)
+        if (isset($_POST['id_no'])) {
+            $id_no = $this->conn->real_escape_string($_POST['id_no']);
+            $query = "SELECT * FROM faculty WHERE id_no = '$id_no'";
+            $result = $this->conn->query($query);
 
-if($action == "save_event"){
-	$save = $crud->save_event();
-	if($save)
-		echo $save;
+            if ($result && $result->num_rows > 0) {
+                $row = $result->fetch_assoc();
+                $_SESSION['login_id'] = $row['id']; // Store faculty ID in session
+                return 1; // Success
+            } else {
+                return 0; // Invalid ID
+            }
+        }
+        return 'No ID provided'; // Handle case with no ID
+    }
+
+    public function login2() {
+        // Implement logic for login2
+        // Example:
+        return 'login2 functionality not implemented'; 
+    }
+
+    public function logout() {
+        // Logout functionality
+        session_destroy();
+        return 'Logged out successfully';
+    }
+
+    public function logout2() {
+        // Implement logic for logout2
+        return 'logout2 functionality not implemented';
+    }
+
+    public function save_user() {
+        // Implement logic to save a user
+        if (isset($_POST['username']) && isset($_POST['password'])) {
+            $username = $this->conn->real_escape_string($_POST['username']);
+            $password = $this->conn->real_escape_string($_POST['password']);
+            // Save user logic
+            $query = "INSERT INTO users (username, password) VALUES ('$username', MD5('$password'))";
+            if ($this->conn->query($query) === TRUE) {
+                return "User saved successfully";
+            } else {
+                return "Error saving user: " . $this->conn->error;
+            }
+        }
+        return 'No user data provided';
+    }
+
+    public function delete_schedule() {
+        // Implement logic to delete a schedule
+        if (isset($_POST['schedule_id'])) {
+            $schedule_id = $this->conn->real_escape_string($_POST['schedule_id']);
+            $query = "DELETE FROM schedules WHERE id = '$schedule_id'";
+            if ($this->conn->query($query) === TRUE) {
+                return "Schedule deleted successfully";
+            } else {
+                return "Error deleting schedule: " . $this->conn->error;
+            }
+        }
+        return 'No schedule ID provided';
+    }
+
+    // Additional methods for other actions can be implemented here
+    // ...
+
+    public function __destruct() {
+        // Close the database connection
+        if ($this->conn) {
+            $this->conn->close();
+        }
+    }
 }
-if($action == "delete_event"){
-	$save = $crud->delete_event();
-	if($save)
-		echo $save;
-}	
-if($action == "participate"){
-	$save = $crud->participate();
-	if($save)
-		echo $save;
-}
-if($action == "get_venue_report"){
-	$get = $crud->get_venue_report();
-	if($get)
-		echo $get;
-}
-if($action == "save_art_fs"){
-	$save = $crud->save_art_fs();
-	if($save)
-		echo $save;
-}
-if($action == "delete_art_fs"){
-	$save = $crud->delete_art_fs();
-	if($save)
-		echo $save;
-}
-if($action == "get_pdetails"){
-	$get = $crud->get_pdetails();
-	if($get)
-		echo $get;
-}
-ob_end_flush();
 ?>
