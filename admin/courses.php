@@ -211,9 +211,12 @@ function save_course() {
                 });
             } else {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Unexpected response from the server.',
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: 'Course successfully updated.',
+                    showConfirmButton: true,
+                }).then(function() {
+                    location.reload(); // Reload after confirmation
                 });
             }
         },
@@ -253,9 +256,12 @@ function delete_course(id) {
                 });
             } else {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while deleting the course.',
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'Course successfully deleted.',
+                    showConfirmButton: true,
+                }).then(function() {
+                    location.reload(); // Reload after confirmation
                 });
             }
         }
