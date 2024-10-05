@@ -95,7 +95,7 @@
       }
       
       $.ajax({
-        url: 'admin/ajax.php?action=login_faculty',
+        url: 'admin/ajax.php',
         method: 'POST',
         data: $(this).serialize(),
         error: err => {
