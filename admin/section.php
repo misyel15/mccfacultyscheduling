@@ -102,7 +102,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                             <tbody>
                                 <?php 
                                 $i = 1;
-                                $room = $conn->query("SELECT * FROM section ORDER BY id ASC");
+                                $room = $conn->query("SELECT * FROM section WHERE dept_id = '$dept_id ORDER BY id ASC");
                                 while($row = $room->fetch_assoc()):
                                 ?>
                                 <tr>
