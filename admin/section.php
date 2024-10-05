@@ -57,7 +57,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <label for="cyear" class="col-sm-3 control-label">Year</label>
                                     <div class="col-sm-12">
-                                        <select class="form-control" name="cyear" id="cyear" required>
+                                        <select class="form-control" name="cyear" id="cyear">
                                             <option value="" disabled selected>Select Year</option>
                                             <option value="1st">1st</option>
                                             <option value="2nd">2nd</option>
@@ -69,7 +69,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Section</label>
-                                        <input type="text" class="form-control" name="section" id="section" required>
+                                        <input type="text" class="form-control" name="section" id="section">
                                     </div>
                                 </div>
                             </form>
@@ -136,6 +136,17 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
     }
 
     $('#saveSectionBtn').click(function() {
+        // Check if all required fields are filled out
+        if ($('#course').val() === "" || $('#cyear').val() === "" || $('#section').val() === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: 'Please fill out all required fields.',
+                showConfirmButton: true
+            });
+            return; // Exit the function if validation fails
+        }
+        
         $('#manage-section').submit();
     });
 
@@ -150,7 +161,6 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             processData: false,
             method: 'POST',
             success: function(resp) {
-                console.log(resp); // Check the response in the console
                 if (resp == 1) {
                     Swal.fire({
                         icon: 'success',
@@ -166,7 +176,8 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         icon: 'success',
                         title: 'Success',
                         text: 'Data successfully updated!',
-                        showConfirmButton: true,
+                        showConfirmButton: false,
+                        timer: 1500
                     }).then(function() {
                         location.reload();
                     });
@@ -177,21 +188,22 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         text: 'Section already exists for the given course and year.',
                         showConfirmButton: true
                     });
-                } else if (resp == 4) {
+                } else {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Warning!',
                         text: 'Please fill out all required fields.',
                         showConfirmButton: true
                     });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'An unexpected error occurred.',
-                        showConfirmButton: true
-                    });
                 }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while processing your request.',
+                    showConfirmButton: true
+                });
             }
         });
     });
@@ -218,40 +230,25 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                delete_section(id);
+                $.ajax({
+                    url: 'ajax.php?action=delete_section',
+                    method: 'POST',
+                    data: { id: id },
+                    success: function(resp) {
+                        if (resp == 1) {
+                            Swal.fire('Deleted!', 'Your section has been deleted.', 'success').then(function() {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete the section.', 'error');
+                        }
+                    }
+                });
             }
         });
     });
 
-    function delete_section(id) {
-        $.ajax({
-            url: 'ajax.php?action=delete_section',
-            method: 'POST',
-            data: {id: id},
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: 'Section has been deleted.',
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'An unexpected error occurred.',
-                        showConfirmButton: true
-                    });
-                }
-            }
-        });
-    }
-
     $(document).ready(function() {
-        $('#sectionTable').DataTable(); // Initialize DataTable if you included it
+        $('#sectionTable').DataTable(); // Initialize DataTable
     });
 </script>
