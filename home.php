@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>Mcc Faculty Scheduling</title>
-  <link rel="icon" href="back.png" type="image/png">      
+  <link rel="icon" href="back.png" type="image/png">
 
   <!-- Include Bootstrap for styling -->
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -18,18 +18,18 @@
   <?php 
   if(isset($_SESSION['login_id'])) {
       header("location:index.php");
-      exit(); // It's a good practice to exit after a header redirect
+      exit();
   }
   ?>
 
 </head>
-
 <style>
   body {
     width: 100%;
     height: calc(100%);
     position: fixed;
   }
+
   #main {
     width: calc(100%);
     height: calc(100%);
@@ -37,8 +37,9 @@
     align-items: center;
     justify-content: center;
   }
-  #login { }
-  
+
+  #login {}
+
   .navbar-brand {
     color: white;
     font-size: 0.9rem;
@@ -66,9 +67,7 @@
               <label for="id_no" class="control-label">Please enter your Faculty ID No.</label>
               <input type="text" id="id_no" name="id_no" class="form-control" required>
             </div>
-            <center>
-              <button type="submit" class="btn-sm btn-block btn-wave col-md-4 btn-primary">Login</button>
-            </center>
+            <center><button type="submit" class="btn-sm btn-block btn-wave col-md-4 btn-primary">Login</button></center>
           </form>
           <br>
         </div>
@@ -86,28 +85,25 @@
   <script>
     $('#login-form').submit(function(e) {
       e.preventDefault();
-      const $submitButton = $(this).find('button[type="submit"]');
-      $submitButton.attr('disabled', true).html('Logging in...');
-      
-      // Remove previous error message if exists
-      if ($(this).find('.alert-danger').length > 0) {
+      $('#login-form button[type="submit"]').attr('disabled', true).html('Logging in...');
+      if ($(this).find('.alert-danger').length > 0)
         $(this).find('.alert-danger').remove();
-      }
-      
+
       $.ajax({
-        url: 'admin/ajax.php',
+        url: 'admin/ajax.php?action=login_faculty',
         method: 'POST',
         data: $(this).serialize(),
-        error: err => {
-          console.log(err);
-          $submitButton.removeAttr('disabled').html('Login');
+        error: function(err) {
+          console.error(err);
+          $('#login-form button[type="submit"]').removeAttr('disabled').html('Login');
+          $('#login-form').prepend('<div class="alert alert-danger">An error occurred. Please try again later.</div>');
         },
         success: function(resp) {
           if (resp == 1) {
             location.href = 'index.php';
           } else {
             $('#login-form').prepend('<div class="alert alert-danger">ID Number is incorrect.</div>');
-            $submitButton.removeAttr('disabled').html('Login');
+            $('#login-form button[type="submit"]').removeAttr('disabled').html('Login');
           }
         }
       });
