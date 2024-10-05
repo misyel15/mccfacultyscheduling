@@ -1,21 +1,41 @@
 <?php
 session_start(); // Start the session
-include('db_connect.php');
-include 'includes/header.php';
+include('db_connect.php'); // Include your database connection
+include 'includes/header.php'; // Include your header file
 
 // Assuming the user department ID is stored in the session after login
 $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if ($_POST['action'] === 'save_subject') {
-        save_subject($conn, $dept_id);
-    } elseif ($_POST['action'] === 'delete_subject') {
-        delete_subject($conn);
+    if (isset($_POST['action'])) {
+        if ($_POST['action'] === 'save_subject') {
+            save_subject($conn, $dept_id);
+        } elseif ($_POST['action'] === 'delete_subject') {
+            delete_subject($conn);
+        }
     }
 }
 
 function save_subject($conn, $dept_id) {
     if (isset($_POST['subject'], $_POST['description'], $_POST['Lec_Units'], $_POST['Lab_Units'], $_POST['hours'], $_POST['total_units'], $_POST['course'], $_POST['year'], $_POST['semester'], $_POST['specialization'])) {
-        extract($_POST);
+        $subject = $conn->real_escape_string($_POST['subject']);
+        $description = $conn->real_escape_string($_POST['description']);
+        $Lec_Units = $conn->real_escape_string($_POST['Lec_Units']);
+        $Lab_Units = $conn->real_escape_string($_POST['Lab_Units']);
+        $hours = $conn->real_escape_string($_POST['hours']);
+        $total_units = $conn->real_escape_string($_POST['total_units']);
+        $course = $conn->real_escape_string($_POST['course']);
+        $year = $conn->real_escape_string($_POST['year']);
+        $semester = $conn->real_escape_string($_POST['semester']);
+        $specialization = $conn->real_escape_string($_POST['specialization']);
+        $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+
+        // Check for duplicate subjects
+        $check_duplicate = $conn->query("SELECT * FROM subjects WHERE subject = '$subject' AND id != '$id'");
+        if ($check_duplicate->num_rows > 0) {
+            echo json_encode(['status' => 'error', 'message' => 'Duplicate subject found.']);
+            return;
+        }
 
         $data = "subject = '$subject', 
                  description = '$description', 
@@ -29,12 +49,7 @@ function save_subject($conn, $dept_id) {
                  specialization = '$specialization', 
                  dept_id = '$dept_id'";
 
-        $check_duplicate = $conn->query("SELECT * FROM subjects WHERE subject = '$subject' AND id != '$id'");
-        if ($check_duplicate->num_rows > 0) {
-            echo json_encode(['status' => 'error', 'message' => 'Duplicate subject found.']);
-            return;
-        }
-
+        // Insert or update based on the presence of an ID
         if (empty($id)) {
             $save = $conn->query("INSERT INTO subjects SET $data");
         } else {
@@ -53,7 +68,7 @@ function save_subject($conn, $dept_id) {
 
 function delete_subject($conn) {
     if (isset($_POST['id'])) {
-        $id = $_POST['id'];
+        $id = (int)$_POST['id'];
         $delete = $conn->query("DELETE FROM subjects WHERE id = $id");
         if ($delete) {
             echo json_encode(['status' => 'success', 'message' => 'Subject deleted successfully.']);
@@ -64,7 +79,6 @@ function delete_subject($conn) {
         echo json_encode(['status' => 'error', 'message' => 'ID is required.']);
     }
 }
-
 ?>
 
 <!-- Include SweetAlert CSS -->
@@ -106,13 +120,11 @@ function delete_subject($conn) {
                                     <?php 
                                     $i = 1;
                                     // Fetch subjects based on department ID
-                                    if ($dept_id) {
-                                        $subject = $conn->query("SELECT * FROM subjects WHERE dept_id = '$dept_id' ORDER BY id ASC");
-                                    } else {
-                                        $subject = $conn->query("SELECT * FROM subjects ORDER BY id ASC");
-                                    }
-                                    while($row = $subject->fetch_assoc()):
-                                    ?>
+                                    $subject = $dept_id ? 
+                                        $conn->query("SELECT * FROM subjects WHERE dept_id = '$dept_id' ORDER BY id ASC") : 
+                                        $conn->query("SELECT * FROM subjects ORDER BY id ASC");
+                                    
+                                    while ($row = $subject->fetch_assoc()): ?>
                                     <tr class="subject-row">
                                         <td class="text-center"><?php echo $i++; ?></td>
                                         <td>
@@ -120,7 +132,19 @@ function delete_subject($conn) {
                                             <p><small><b>Description:</b> <?php echo $row['description']; ?></small></p>
                                         </td>
                                         <td class="text-center">
-                                            <button class="btn btn-sm btn-primary edit_subject" type="button" data-id="<?php echo $row['id']; ?>" data-subject="<?php echo $row['subject']; ?>" data-description="<?php echo $row['description']; ?>" data-toggle="modal" data-target="#subjectModal">
+                                            <button class="btn btn-sm btn-primary edit_subject" type="button" 
+                                                data-id="<?php echo $row['id']; ?>" 
+                                                data-subject="<?php echo htmlspecialchars($row['subject'], ENT_QUOTES); ?>" 
+                                                data-description="<?php echo htmlspecialchars($row['description'], ENT_QUOTES); ?>" 
+                                                data-units="<?php echo $row['total_units']; ?>" 
+                                                data-leccount="<?php echo $row['Lec_units']; ?>" 
+                                                data-labcount="<?php echo $row['Lab_units']; ?>" 
+                                                data-hours="<?php echo $row['hours']; ?>" 
+                                                data-course="<?php echo htmlspecialchars($row['course'], ENT_QUOTES); ?>" 
+                                                data-year="<?php echo $row['year']; ?>" 
+                                                data-semester="<?php echo $row['semester']; ?>" 
+                                                data-specialization="<?php echo htmlspecialchars($row['specialization'], ENT_QUOTES); ?>" 
+                                                data-toggle="modal" data-target="#subjectModal">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
                                             <button class="btn btn-sm btn-danger delete_subject" type="button" data-id="<?php echo $row['id']; ?>">
@@ -159,11 +183,7 @@ function delete_subject($conn) {
                                     <textarea class="form-control" name="description" id="description" required></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label">Total Units</label>
-                                    <input type="number" class="form-control" name="total_units" id="total_units" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label">Lec Units</label>
+                                    <label class="control-label">Lecture Units</label>
                                     <input type="number" class="form-control" name="Lec_Units" id="Lec_Units" required>
                                 </div>
                                 <div class="form-group">
@@ -175,18 +195,12 @@ function delete_subject($conn) {
                                     <input type="number" class="form-control" name="hours" id="hours" required>
                                 </div>
                                 <div class="form-group">
+                                    <label class="control-label">Total Units</label>
+                                    <input type="number" class="form-control" name="total_units" id="total_units" required>
+                                </div>
+                                <div class="form-group">
                                     <label class="control-label">Course</label>
-                                    <select class="form-control" name="course" id="course" required>
-                                        <option value="">Select Course</option>
-                                        <?php 
-                                            $sql = "SELECT * FROM courses";
-                                            $query = $conn->query($sql);
-                                            while($row = $query->fetch_array()):
-                                                $course = $row['course'];
-                                        ?>
-                                        <option value="<?php echo $course; ?>"><?php echo ucwords($course); ?></option>
-                                        <?php endwhile; ?>
-                                    </select>
+                                    <input type="text" class="form-control" name="course" id="course" required>
                                 </div>
                                 <div class="form-group">
                                     <label class="control-label">Year</label>
@@ -198,7 +212,7 @@ function delete_subject($conn) {
                                 </div>
                                 <div class="form-group">
                                     <label class="control-label">Specialization</label>
-                                    <input type="text" class="form-control" name="specialization" id="specialization">
+                                    <input type="text" class="form-control" name="specialization" id="specialization" required>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -215,57 +229,66 @@ function delete_subject($conn) {
 </div>
 
 <script>
-$(document).ready(function() {
-    // Initialize DataTable
+$(document).ready(function () {
     $('#subjectTable').DataTable();
 
-    // Handle form submission
-    $('#manage-subject').on('submit', function(e) {
-        e.preventDefault(); // Prevent the default form submission
-        const formData = $(this).serialize(); // Serialize the form data
-        formData += '&action=save_subject'; // Append the action
+    // Handle edit subject button click
+    $('.edit_subject').on('click', function () {
+        const id = $(this).data('id');
+        const subject = $(this).data('subject');
+        const description = $(this).data('description');
+        const units = $(this).data('units');
+        const leccount = $(this).data('leccount');
+        const labcount = $(this).data('labcount');
+        const hours = $(this).data('hours');
+        const course = $(this).data('course');
+        const year = $(this).data('year');
+        const semester = $(this).data('semester');
+        const specialization = $(this).data('specialization');
 
+        $('#id').val(id);
+        $('#subject').val(subject);
+        $('#description').val(description);
+        $('#Lec_Units').val(leccount);
+        $('#Lab_Units').val(labcount);
+        $('#hours').val(hours);
+        $('#total_units').val(units);
+        $('#course').val(course);
+        $('#year').val(year);
+        $('#semester').val(semester);
+        $('#specialization').val(specialization);
+        $('#subjectModalLabel').text('Edit Subject');
+    });
+
+    // Handle save subject form submission
+    $('#manage-subject').on('submit', function (e) {
+        e.preventDefault();
+        const formData = $(this).serialize() + '&action=save_subject';
         $.ajax({
-            url: '', // Current page
+            url: '', // Current page URL
             method: 'POST',
             data: formData,
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 Swal.fire({
                     icon: response.status === 'success' ? 'success' : 'error',
                     title: response.status === 'success' ? 'Success' : 'Error',
                     text: response.message,
                 }).then(() => {
-                    location.reload(); // Reload the page to see changes
+                    if (response.status === 'success') {
+                        location.reload();
+                    }
                 });
-            },
-            error: function() {
-                Swal.fire('Error', 'There was an error processing your request.', 'error');
             }
         });
     });
 
-    // Edit subject
-    $(document).on('click', '.edit_subject', function() {
-        $('#id').val($(this).data('id'));
-        $('#subject').val($(this).data('subject'));
-        $('#description').val($(this).data('description'));
-        $('#total_units').val($(this).data('units'));
-        $('#Lec_Units').val($(this).data('leccount'));
-        $('#Lab_Units').val($(this).data('labcount'));
-        $('#hours').val($(this).data('hours'));
-        $('#course').val($(this).data('course'));
-        $('#year').val($(this).data('year'));
-        $('#semester').val($(this).data('semester'));
-        $('#specialization').val($(this).data('specialization'));
-    });
-
-    // Delete subject
-    $(document).on('click', '.delete_subject', function() {
+    // Handle delete subject button click
+    $('.delete_subject').on('click', function () {
         const id = $(this).data('id');
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this subject!',
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -274,17 +297,20 @@ $(document).ready(function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '', // Current page
+                    url: '', // Current page URL
                     method: 'POST',
                     data: { id: id, action: 'delete_subject' },
                     dataType: 'json',
-                    success: function(response) {
-                        Swal.fire('Deleted!', response.message, 'success').then(() => {
-                            location.reload();
+                    success: function (response) {
+                        Swal.fire({
+                            icon: response.status === 'success' ? 'success' : 'error',
+                            title: response.status === 'success' ? 'Deleted!' : 'Error',
+                            text: response.message,
+                        }).then(() => {
+                            if (response.status === 'success') {
+                                location.reload();
+                            }
                         });
-                    },
-                    error: function() {
-                        Swal.fire('Error', 'There was an error processing your request.', 'error');
                     }
                 });
             }
