@@ -6,7 +6,6 @@ include 'includes/header.php';
 // Assuming you store the department ID in the session during login
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 ?>
-
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
@@ -137,6 +136,17 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
     }
 
     $('#saveSectionBtn').click(function() {
+        // Check if all required fields are filled out
+        if ($('#course').val() === "" || $('#cyear').val() === "" || $('#section').val() === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: 'Please fill out all required fields.',
+                showConfirmButton: true
+            });
+            return; // Exit the function if validation fails
+        }
+        
         $('#manage-section').submit();
     });
 
@@ -166,7 +176,8 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         icon: 'success',
                         title: 'Success',
                         text: 'Data successfully updated!',
-                        showConfirmButton: true,
+                        showConfirmButton: false,
+                        timer: 1500
                     }).then(function() {
                         location.reload();
                     });
@@ -185,6 +196,14 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         showConfirmButton: true
                     });
                 }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while processing your request.',
+                    showConfirmButton: true
+                });
             }
         });
     });
@@ -211,40 +230,25 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                delete_section(id);
+                $.ajax({
+                    url: 'ajax.php?action=delete_section',
+                    method: 'POST',
+                    data: { id: id },
+                    success: function(resp) {
+                        if (resp == 1) {
+                            Swal.fire('Deleted!', 'Your section has been deleted.', 'success').then(function() {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete the section.', 'error');
+                        }
+                    }
+                });
             }
         });
     });
 
-    function delete_section(id) {
-        $.ajax({
-            url: 'ajax.php?action=delete_section',
-            method: 'POST',
-            data: { id: id },
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: 'Section has been deleted.',
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'save!',
-                        text: 'successful to save the section.',
-                        showConfirmButton: true
-                    });
-                }
-            }
-        });
-    }
-
     $(document).ready(function() {
-        $('#sectionTable').DataTable();
+        $('#sectionTable').DataTable(); // Initialize DataTable
     });
 </script>
