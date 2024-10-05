@@ -4,9 +4,9 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
-// Example: $_SESSION['dept_id'] = $user['dept_id'];
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 ?>
+
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
@@ -226,17 +226,24 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     Swal.fire({
                         icon: 'success',
                         title: 'Deleted!',
-                        text: 'Data successfully deleted.',
-                        showConfirmButton: true,
+                        text: 'Section has been deleted.',
+                        showConfirmButton: false,
+                        timer: 1500
                     }).then(function() {
                         location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Failed to delete the section.',
+                        showConfirmButton: true
                     });
                 }
             }
         });
     }
 
-    // Initialize DataTable
     $(document).ready(function() {
         $('#sectionTable').DataTable();
     });
