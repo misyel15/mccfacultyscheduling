@@ -43,15 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<!-- Include SweetAlert CSS -->
+<!-- Include SweetAlert CSS and JS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
-<!-- Include Bootstrap CSS and SweetAlert JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<!-- Include DataTables CSS and JS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 
@@ -106,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
             </div>
-            <!-- Table Panel -->
 
             <!-- Modal -->
             <div class="modal fade" id="courseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel" aria-hidden="true">
@@ -145,12 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<style>
-    td {
-        vertical-align: middle !important;
-    }
-</style>
-
 <script>
 // Function to reset the form
 function _reset() {
@@ -174,7 +163,7 @@ $('.delete_course').click(function() {
     var id = $(this).attr('data-id');
     Swal.fire({
         title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        text: "This action cannot be undone.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -182,7 +171,7 @@ $('.delete_course').click(function() {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            delete_course(id); // Call delete function if confirmed
+            delete_course(id);
         }
     });
 });
@@ -191,10 +180,11 @@ $('.delete_course').click(function() {
 function save_course() {
     var formData = $('#manage-course').serialize();
     $.ajax({
-        url: '', // Same PHP file for handling
+        url: '', // URL of the same PHP file
         method: 'POST',
         data: formData,
         success: function(resp) {
+            console.log('Response from server:', resp); // Debugging
             if (resp == 1) {
                 Swal.fire({
                     icon: 'success',
@@ -216,10 +206,24 @@ function save_course() {
             } else if (resp == 0) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error',
+                    title: 'Duplicate',
                     text: 'Course already exists!',
                 });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Unexpected response from the server.',
+                });
             }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error in AJAX request:', status, error); // Debugging AJAX errors
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while processing the request.',
+            });
         }
     });
 }
@@ -227,16 +231,17 @@ function save_course() {
 // Form submission event
 $('#manage-course').on('submit', function(e) {
     e.preventDefault();
-    save_course(); // Call save function
+    save_course(); // Call save function on form submit
 });
 
 // Function to delete a course
 function delete_course(id) {
     $.ajax({
-        url: '', // Same PHP file for handling
+        url: '', // URL of the same PHP file
         method: 'POST',
-        data: { action: 'delete_course', id: id },
+        data: { id: id, action: 'delete_course' },
         success: function(resp) {
+            console.log('Delete response:', resp); // Debugging
             if (resp == 1) {
                 Swal.fire({
                     icon: 'success',
@@ -250,20 +255,15 @@ function delete_course(id) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Failed to delete course.',
+                    text: 'An error occurred while deleting the course.',
                 });
             }
         }
     });
 }
 
-// Initialize DataTable
+// Initialize DataTables
 $(document).ready(function() {
-    $('#course-table').DataTable({
-        "paging": true,
-        "searching": true,
-        "ordering": true,
-        "info": true
-    });
+    $('#course-table').DataTable();
 });
 </script>
