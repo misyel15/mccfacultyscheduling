@@ -57,7 +57,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <label for="cyear" class="col-sm-3 control-label">Year</label>
                                     <div class="col-sm-12">
-                                        <select class="form-control" name="cyear" id="cyear">
+                                        <select class="form-control" name="cyear" id="cyear" required>
                                             <option value="" disabled selected>Select Year</option>
                                             <option value="1st">1st</option>
                                             <option value="2nd">2nd</option>
@@ -69,7 +69,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Section</label>
-                                        <input type="text" class="form-control" name="section" id="section">
+                                        <input type="text" class="form-control" name="section" id="section" required>
                                     </div>
                                 </div>
                             </form>
@@ -192,34 +192,32 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     Swal.fire({
                         icon: 'warning',
                         title: 'Warning!',
-                        text: 'Please fill out all required fields.',
+                        text: 'An error occurred while processing your request.',
                         showConfirmButton: true
                     });
                 }
-            },
-            error: function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'An error occurred while processing your request.',
-                    showConfirmButton: true
-                });
+                _reset();
+                $('#sectionModal').modal('hide');
             }
         });
     });
 
     $('.edit_section').click(function() {
-        _reset(); // Reset form fields
-        var cat = $('#manage-section');
-        cat.find("[name='id']").val($(this).data('id'));
-        cat.find("[name='course']").val($(this).data('course'));
-        cat.find("[name='cyear']").val($(this).data('cyear'));
-        cat.find("[name='section']").val($(this).data('section'));
+        var id = $(this).attr('data-id');
+        var course = $(this).attr('data-course');
+        var cyear = $(this).attr('data-cyear');
+        var section = $(this).attr('data-section');
+
+        $('#manage-section input[name=id]').val(id);
+        $('#manage-section select[name=course]').val(course);
+        $('#manage-section select[name=cyear]').val(cyear);
+        $('#manage-section input[name=section]').val(section);
+
         $('#sectionModal').modal('show');
     });
 
     $('.delete_section').click(function() {
-        var id = $(this).data('id');
+        var id = $(this).attr('data-id');
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -236,19 +234,26 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     data: { id: id },
                     success: function(resp) {
                         if (resp == 1) {
-                            Swal.fire('Deleted!', 'Your section has been deleted.', 'success').then(function() {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Your section has been deleted.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(function() {
                                 location.reload();
                             });
                         } else {
-                            Swal.fire('Error!', 'Failed to delete the section.', 'error');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'An error occurred while deleting the section.',
+                                showConfirmButton: true
+                            });
                         }
                     }
                 });
             }
         });
-    });
-
-    $(document).ready(function() {
-        $('#sectionTable').DataTable(); // Initialize DataTable
     });
 </script>
