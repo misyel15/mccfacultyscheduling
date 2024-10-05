@@ -4,6 +4,7 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
+// Example: $_SESSION['dept_id'] = $user['dept_id'];
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 ?>
 <!-- Include SweetAlert CSS -->
@@ -39,7 +40,6 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         <div class="modal-body">
                             <form action="" id="manage-section">
                                 <input type="hidden" name="id">
-                                <input type="hidden" name="action" value="save_section"> <!-- Action input for save_section -->
                                 <div class="form-group">
                                     <label for="course" class="col-sm-4 control-label">Course</label>
                                     <div class="col-sm-12">
@@ -70,7 +70,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Section</label>
-                                        <input type="text" class="form-control" name="section" id="section" required>
+                                        <input type="text" class="form-control" name="section" id="section">
                                     </div>
                                 </div>
                             </form>
@@ -144,7 +144,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         e.preventDefault();
 
         $.ajax({
-            url: 'ajax.php',
+            url: 'ajax.php?action=save_section',
             data: new FormData($(this)[0]),
             cache: false,
             contentType: false,
@@ -223,11 +223,12 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             data: { id: id },
             success: function(resp) {
                 if (resp == 1) {
-                    Swal.fire(
-                        'Deleted!',
-                        'Section has been deleted.',
-                        'success'
-                    ).then(function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Data successfully deleted.',
+                        showConfirmButton: true,
+                    }).then(function() {
                         location.reload();
                     });
                 }
@@ -235,6 +236,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         });
     }
 
+    // Initialize DataTable
     $(document).ready(function() {
         $('#sectionTable').DataTable();
     });
