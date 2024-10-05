@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
@@ -181,58 +182,44 @@ $('.delete_course').click(function() {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            delete_course(id);
+            delete_course(id); // Call delete function if confirmed
         }
     });
 });
 
 // Function to save or update a course
 function save_course() {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you want to save these changes?",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, save it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            var formData = $('#manage-course').serialize();
-            
-            $.ajax({
-                url: '',
-                method: 'POST',
-                data: formData,
-                success: function(resp) {
-                    if (resp == 1) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Saved!',
-                            text: 'Course successfully added.',
-                            showConfirmButton: true,
-                        }).then(function() {
-                            location.reload(); // Reload the page after confirmation
-                        });
-                    } else if (resp == 0) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'Course already exists.',
-                            showConfirmButton: true
-                        });
-                    } else if (resp == 2) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Updated!',
-                            text: 'Course successfully updated.',
-                            showConfirmButton: true,
-                        }).then(function() {
-                            location.reload(); // Reload after update confirmation
-                        });
-                    }
-                }
-            });
+    var formData = $('#manage-course').serialize();
+    $.ajax({
+        url: '', // Same PHP file for handling
+        method: 'POST',
+        data: formData,
+        success: function(resp) {
+            if (resp == 1) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Saved!',
+                    text: 'Course successfully added.',
+                    showConfirmButton: true,
+                }).then(function() {
+                    location.reload(); // Reload after confirmation
+                });
+            } else if (resp == 2) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: 'Course successfully updated.',
+                    showConfirmButton: true,
+                }).then(function() {
+                    location.reload(); // Reload after confirmation
+                });
+            } else if (resp == 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Course already exists!',
+                });
+            }
         }
     });
 }
@@ -240,13 +227,13 @@ function save_course() {
 // Form submission event
 $('#manage-course').on('submit', function(e) {
     e.preventDefault();
-    save_course();
+    save_course(); // Call save function
 });
 
 // Function to delete a course
 function delete_course(id) {
     $.ajax({
-        url: '',
+        url: '', // Same PHP file for handling
         method: 'POST',
         data: { action: 'delete_course', id: id },
         success: function(resp) {
@@ -254,10 +241,16 @@ function delete_course(id) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Deleted!',
-                    text: 'Data successfully deleted.',
+                    text: 'Course successfully deleted.',
                     showConfirmButton: true,
                 }).then(function() {
-                    location.reload(); // Reload after deletion confirmation
+                    location.reload(); // Reload after confirmation
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to delete course.',
                 });
             }
         }
@@ -273,5 +266,4 @@ $(document).ready(function() {
         "info": true
     });
 });
-
 </script>
