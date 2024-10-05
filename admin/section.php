@@ -199,9 +199,9 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             },
             error: function() {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'An error occurred while processing your request.',
+                    icon: 'save',
+                    title: 'Successful!',
+                    text: 'successfully to save.',
                     showConfirmButton: true
                 });
             }
