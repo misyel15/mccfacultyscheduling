@@ -4,65 +4,58 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming the user department ID is stored in the session after login
-$dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
-
+$dept_id = $_SESSION['dept_id'] ?? null; // Use null coalescing operator for cleaner code
 
 if (isset($_POST['action'])) {
     $action = $_POST['action'];
 
     if ($action == 'save_subject') {
         // Save or Update Subject
-        $id = $_POST['id'];
-        $subject = $_POST['subject'];
-        $description = $_POST['description'];
-        $total_units = $_POST['total_units'];
-        $Lec_Units = $_POST['Lec_Units'];
-        $Lab_Units = $_POST['Lab_Units'];
-        $course = $_POST['course'];
-        $year = $_POST['year'];
-        $semester = $_POST['semester'];
-        $specialization = $_POST['specialization'];
-        $hours = $_POST['hours'];
+        $id = $_POST['id'] ?? null;
+        $subject = $_POST['subject'] ?? '';
+        $description = $_POST['description'] ?? '';
+        $total_units = $_POST['total_units'] ?? 0;
+        $Lec_Units = $_POST['Lec_Units'] ?? 0;
+        $Lab_Units = $_POST['Lab_Units'] ?? 0;
+        $course = $_POST['course'] ?? '';
+        $year = $_POST['year'] ?? '';
+        $semester = $_POST['semester'] ?? '';
+        $specialization = $_POST['specialization'] ?? '';
+        $hours = $_POST['hours'] ?? 0;
 
+        // Prepare statement to prevent SQL injection
         if (empty($id)) {
             // Insert new subject
-            $sql = "INSERT INTO subjects (subject, description, total_units, Lec_Units, Lab_Units, course, year, semester, specialization, hours, dept_id) 
-                    VALUES ('$subject', '$description', '$total_units', '$Lec_Units', '$Lab_Units', '$course', '$year', '$semester', '$specialization', '$hours', '{$_SESSION['dept_id']}')";
+            $sql = $conn->prepare("INSERT INTO subjects (subject, description, total_units, Lec_Units, Lab_Units, course, year, semester, specialization, hours, dept_id) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $sql->bind_param("ssiiisssssi", $subject, $description, $total_units, $Lec_Units, $Lab_Units, $course, $year, $semester, $specialization, $hours, $_SESSION['dept_id']);
         } else {
             // Update existing subject
-            $sql = "UPDATE subjects SET 
-                    subject = '$subject', 
-                    description = '$description', 
-                    total_units = '$total_units', 
-                    Lec_Units = '$Lec_Units', 
-                    Lab_Units = '$Lab_Units', 
-                    course = '$course', 
-                    year = '$year', 
-                    semester = '$semester', 
-                    specialization = '$specialization', 
-                    hours = '$hours' 
-                    WHERE id = '$id'";
+            $sql = $conn->prepare("UPDATE subjects SET subject = ?, description = ?, total_units = ?, Lec_Units = ?, Lab_Units = ?, course = ?, year = ?, semester = ?, specialization = ?, hours = ? WHERE id = ?");
+            $sql->bind_param("ssiiissssii", $subject, $description, $total_units, $Lec_Units, $Lab_Units, $course, $year, $semester, $specialization, $hours, $id);
         }
 
-        if ($conn->query($sql)) {
+        if ($sql->execute()) {
             echo 'success';
         } else {
-            echo 'Error: ' . $conn->error;
+            echo 'Error: ' . $sql->error;
         }
     } elseif ($action == 'delete_subject') {
         // Delete subject
-        $id = $_POST['id'];
-        $sql = "DELETE FROM subjects WHERE id = '$id'";
-        if ($conn->query($sql)) {
-            echo 'success';
-        } else {
-            echo 'Error: ' . $conn->error;
+        $id = $_POST['id'] ?? null;
+        if ($id) {
+            $sql = $conn->prepare("DELETE FROM subjects WHERE id = ?");
+            $sql->bind_param("i", $id);
+            if ($sql->execute()) {
+                echo 'success';
+            } else {
+                echo 'Error: ' . $sql->error;
+            }
         }
     }
-    exit;
+    exit; // Always exit after processing AJAX requests
 }
 ?>
-
 
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -90,12 +83,6 @@ if (isset($_POST['action'])) {
                         </button>
                     </div>
                     <div class="card-body">
-                        <!-- Search Section -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                            </div>
-                        </div>
-
                         <!-- Filter Section -->
                         <div class="row mb-3">
                             <div class="col-md-6 col-lg-4">
@@ -105,10 +92,9 @@ if (isset($_POST['action'])) {
                                     <?php 
                                         $sql = "SELECT * FROM courses";
                                         $query = $conn->query($sql);
-                                        while($row = $query->fetch_array()):
-                                            $course = $row['course'];
+                                        while ($row = $query->fetch_array()):
                                     ?>
-                                    <option value="<?php echo $course; ?>"><?php echo ucwords($course); ?></option>
+                                    <option value="<?php echo $row['course']; ?>"><?php echo ucwords($row['course']); ?></option>
                                     <?php endwhile; ?>
                                 </select>
                             </div>
@@ -136,12 +122,11 @@ if (isset($_POST['action'])) {
                                     <?php 
                                     $i = 1;
                                     // Fetch subjects based on department ID
-                                    if ($dept_id) {
-                                        $subject = $conn->query("SELECT * FROM subjects WHERE dept_id = '$dept_id' ORDER BY id ASC");
-                                    } else {
-                                        $subject = $conn->query("SELECT * FROM subjects ORDER BY id ASC");
-                                    }
-                                    while($row = $subject->fetch_assoc()):
+                                    $subject = $dept_id 
+                                        ? $conn->query("SELECT * FROM subjects WHERE dept_id = '$dept_id' ORDER BY id ASC")
+                                        : $conn->query("SELECT * FROM subjects ORDER BY id ASC");
+
+                                    while ($row = $subject->fetch_assoc()):
                                     ?>
                                     <tr class="subject-row" data-course="<?php echo $row['course']; ?>" data-semester="<?php echo $row['semester']; ?>">
                                         <td class="text-center"><?php echo $i++; ?></td>
@@ -162,7 +147,7 @@ if (isset($_POST['action'])) {
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
                                             <button class="btn btn-sm btn-danger delete_subject" type="button" data-id="<?php echo $row['id']; ?>">
-                                                <i class="fas fa-trash-alt"></i> Delete
+                                                <i class="fas fa-trash"></i> Delete
                                             </button>
                                         </td>
                                     </tr>
@@ -173,206 +158,158 @@ if (isset($_POST['action'])) {
                     </div>
                 </div>
             </div>
-            <!-- Table Panel -->
-
-            <!-- Modal -->
-            <div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="subjectModalLabel">Subject Form</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <form action="" id="manage-subject">
-                            <div class="modal-body">
-                                <input type="hidden" name="id">
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Subject</label>
-                                        <input type="text" class="form-control" name="subject">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Description</label>
-                                        <textarea class="form-control" name="description"></textarea>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Total Units</label>
-                                        <input type="number" class="form-control" name="total_units" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Lec Units</label>
-                                        <input type="number" class="form-control" name="Lec_Units" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Lab Units</label>
-                                        <input type="number" class="form-control" name="Lab_Units" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Hours</label>
-                                        <input type="number" class="form-control" name="hours" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Course</label>
-                                        <select class="form-control" name="course" required>
-                                            <option value="">Select Course</option>
-                                            <?php 
-                                                $sql = "SELECT * FROM courses";
-                                                $query = $conn->query($sql);
-                                                while($row = $query->fetch_array()):
-                                                    $course = $row['course'];
-                                            ?>
-                                            <option value="<?php echo $course; ?>"><?php echo ucwords($course); ?></option>
-                                            <?php endwhile; ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Year</label>
-                                        <input type="text" class="form-control" name="year" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Semester</label>
-                                        <input type="text" class="form-control" name="semester" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Specialization</label>
-                                        <input type="text" class="form-control" name="specialization">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary">Save changes</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <!-- End Modal -->
         </div>
     </div>
 </div>
 
-<!-- Include script for handling form submission -->
+<!-- Subject Modal -->
+<div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="subjectModalLabel">Subject Form</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="subjectForm">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="subject-id">
+                    <div class="form-group">
+                        <label for="subject">Subject Name</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" name="description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="total_units">Total Units</label>
+                        <input type="number" class="form-control" id="total_units" name="total_units" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="Lec_Units">Lecture Units</label>
+                        <input type="number" class="form-control" id="Lec_Units" name="Lec_Units" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="Lab_Units">Laboratory Units</label>
+                        <input type="number" class="form-control" id="Lab_Units" name="Lab_Units" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="course">Course</label>
+                        <input type="text" class="form-control" id="course" name="course" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="year">Year</label>
+                        <input type="text" class="form-control" id="year" name="year" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="semester">Semester</label>
+                        <select class="form-control" id="semester" name="semester" required>
+                            <option value="1st">1st Semester</option>
+                            <option value="2nd">2nd Semester</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="specialization">Specialization</label>
+                        <input type="text" class="form-control" id="specialization" name="specialization">
+                    </div>
+                    <div class="form-group">
+                        <label for="hours">Hours</label>
+                        <input type="number" class="form-control" id="hours" name="hours" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script>
 $(document).ready(function() {
-    $('#subjectTable').DataTable(); // Initialize DataTable
+    // Initialize DataTables
+    $('#subjectTable').DataTable();
 
-    // Handle form submission (Save/Edit Subject)
-    $('#manage-subject').submit(function(e) {
-        e.preventDefault(); // Prevent default form submission
-        var formData = $(this).serialize(); // Serialize form data
-        formData += '&action=save_subject'; // Add action to the form data
-
+    // Save subject
+    $('#subjectForm').on('submit', function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize() + '&action=save_subject';
+        
         $.ajax({
-            url: '', // PHP file to handle save/edit subject
-            method: 'POST',
+            type: 'POST',
+            url: 'subject_management.php',
             data: formData,
             success: function(response) {
-                if (response == 'success') {
+                if (response.trim() == 'success') {
                     Swal.fire({
-                        title: 'Success!',
-                        text: 'Subject has been saved.',
                         icon: 'success',
-                        confirmButtonText: 'OK'
+                        title: 'Success',
+                        text: 'Subject saved successfully!',
                     }).then(() => {
                         location.reload(); // Reload page to see changes
                     });
                 } else {
                     Swal.fire({
-                        title: 'Error!',
-                        text: response,
                         icon: 'error',
-                        confirmButtonText: 'Try Again'
+                        title: 'Error',
+                        text: response,
                     });
                 }
             },
             error: function() {
                 Swal.fire({
-                    title: 'Error!',
-                    text: 'There was an issue with the submission. Please try again later.',
                     icon: 'error',
-                    confirmButtonText: 'OK'
+                    title: 'Error',
+                    text: 'An error occurred. Please try again.',
                 });
             }
         });
     });
 
-    // Edit button click event
+    // Edit subject button click
     $('.edit_subject').click(function() {
-        const id = $(this).data('id');
-        const subject = $(this).data('subject');
-        const description = $(this).data('description');
-        const totalUnits = $(this).data('units');
-        const lecUnits = $(this).data('lecunits');
-        const labUnits = $(this).data('labunits');
-        const course = $(this).data('course');
-        const year = $(this).data('year');
-        const semester = $(this).data('semester');
-        const specialization = $(this).data('special');
-        const hours = $(this).data('hours');
-        
-        // Populate modal fields
-        $('#subjectModal input[name="id"]').val(id);
-        $('#subjectModal input[name="subject"]').val(subject);
-        $('#subjectModal textarea[name="description"]').val(description);
-        $('#subjectModal input[name="total_units"]').val(totalUnits);
-        $('#subjectModal input[name="Lec_Units"]').val(lecUnits);
-        $('#subjectModal input[name="Lab_Units"]').val(labUnits);
-        $('#subjectModal input[name="hours"]').val(hours);
-        $('#subjectModal select[name="course"]').val(course);
-        $('#subjectModal input[name="year"]').val(year);
-        $('#subjectModal input[name="semester"]').val(semester);
-        $('#subjectModal input[name="specialization"]').val(specialization);
-
-        $('#subjectModal').modal('show'); // Show the modal
+        var id = $(this).data('id');
+        $('#subject-id').val(id);
+        $('#subject').val($(this).data('subject'));
+        $('#description').val($(this).data('description'));
+        $('#total_units').val($(this).data('units'));
+        $('#Lec_Units').val($(this).data('lecunits'));
+        $('#Lab_Units').val($(this).data('labunits'));
+        $('#course').val($(this).data('course'));
+        $('#year').val($(this).data('year'));
+        $('#semester').val($(this).data('semester'));
+        $('#specialization').val($(this).data('special'));
+        $('#hours').val($(this).data('hours'));
     });
 
-    // Delete button click event
+    // Delete subject
     $('.delete_subject').click(function() {
-        const id = $(this).data('id');
+        var id = $(this).data('id');
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '', // PHP file to handle delete
-                    method: 'POST',
-                    data: { id: id, action: 'delete_subject' },
+                    type: 'POST',
+                    url: 'subject_management.php',
+                    data: { action: 'delete_subject', id: id },
                     success: function(response) {
-                        if (response == 'success') {
-                            Swal.fire('Deleted!', 'Subject has been deleted.', 'success');
-                            setTimeout(() => {
-                                location.reload(); // Reload page to see changes
-                            }, 1000);
+                        if (response.trim() == 'success') {
+                            Swal.fire('Deleted!', 'Your subject has been deleted.', 'success').then(() => {
+                                location.reload(); // Reload to update the list
+                            });
                         } else {
-                            Swal.fire('Error!', response, 'error'); // Show error alert
+                            Swal.fire('Error!', response, 'error');
                         }
                     }
                 });
