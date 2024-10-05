@@ -211,32 +211,24 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                delete_section(id);
+                $.ajax({
+                    url: 'ajax.php?action=delete_section',
+                    method: 'POST',
+                    data: { id: id },
+                    success: function(resp) {
+                        if (resp == 1) {
+                            Swal.fire('Deleted!', 'Your section has been deleted.', 'success').then(function() {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete section.', 'error');
+                        }
+                    }
+                });
             }
         });
     });
 
-    function delete_section(id) {
-        $.ajax({
-            url: 'ajax.php?action=delete_section',
-            method: 'POST',
-            data: { id: id },
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: 'Data successfully deleted.',
-                        showConfirmButton: true,
-                    }).then(function() {
-                        location.reload();
-                    });
-                }
-            }
-        });
-    }
-
-    // Initialize DataTable
     $(document).ready(function() {
         $('#sectionTable').DataTable();
     });
