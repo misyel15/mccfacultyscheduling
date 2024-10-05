@@ -197,7 +197,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     });
                 }
             },
-             function() {
+         error: function() {
                 Swal.fire({
                     icon: 'success',
                     title: 'Successful!',
