@@ -273,6 +273,7 @@ if (isset($_POST['action'])) {
 </div>
 
 <!-- Include script for handling form submission -->
+
 <script>
 $(document).ready(function() {
     $('#subjectTable').DataTable(); // Initialize DataTable
@@ -284,19 +285,35 @@ $(document).ready(function() {
         formData += '&action=save_subject'; // Add action to the form data
 
         $.ajax({
-            url: '', // PHP file to handle form submission
+            url: '', // PHP file to handle save/edit subject
             method: 'POST',
-            data: formData, // Send form data along with action
+            data: formData,
             success: function(response) {
                 if (response == 'success') {
-                    Swal.fire('Success!', 'Subject has been saved.', 'success');
-                    $('#subjectModal').modal('hide');
-                    setTimeout(() => {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Subject has been saved.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
                         location.reload(); // Reload page to see changes
-                    }, 1000);
+                    });
                 } else {
-                    Swal.fire('Error!', response, 'error'); // Show error alert
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response,
+                        icon: 'error',
+                        confirmButtonText: 'Try Again'
+                    });
                 }
+            },
+            error: function() {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'There was an issue with the submission. Please try again later.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         });
     });
@@ -363,7 +380,5 @@ $(document).ready(function() {
         });
     });
 });
-
-
 </script>
 
