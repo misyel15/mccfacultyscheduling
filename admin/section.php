@@ -4,9 +4,9 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
-// Example: $_SESSION['dept_id'] = $user['dept_id'];
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 ?>
+
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
@@ -70,7 +70,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Section</label>
-                                        <input type="text" class="form-control" name="section" id="section">
+                                        <input type="text" class="form-control" name="section" id="section" required>
                                     </div>
                                 </div>
                             </form>
@@ -143,51 +143,55 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
     $('#manage-section').submit(function(e) {
         e.preventDefault();
 
+        const formData = new FormData($(this)[0]);
+
         $.ajax({
             url: 'ajax.php?action=save_section',
-            data: new FormData($(this)[0]),
+            data: formData,
             cache: false,
             contentType: false,
             processData: false,
             method: 'POST',
             success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Data successfully added!',
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 2) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Data successfully updated!',
-                        showConfirmButton: true,
-                    }).then(function() {
-                        location.reload();
-                    });
-                } else if (resp == 3) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Duplicate Entry!',
-                        text: 'Section already exists for the given course and year.',
-                        showConfirmButton: true
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Warning!',
-                        text: 'Please fill out all required fields.',
-                        showConfirmButton: true
-                    });
-                }
+                handleResponse(resp);
             }
         });
     });
+
+    function handleResponse(resp) {
+        let icon = 'success';
+        let title = 'Success';
+        let text = '';
+
+        switch (resp) {
+            case '1':
+                text = 'Data successfully added!';
+                break;
+            case '2':
+                text = 'Data successfully updated!';
+                break;
+            case '3':
+                icon = 'error';
+                title = 'Duplicate Entry!';
+                text = 'Section already exists for the given course and year.';
+                break;
+            default:
+                icon = 'warning';
+                title = 'Warning!';
+                text = 'Please fill out all required fields.';
+        }
+
+        Swal.fire({
+            icon: icon,
+            title: title,
+            text: text,
+            showConfirmButton: true,
+        }).then(function() {
+            if (resp == '1' || resp == '2') {
+                location.reload();
+            }
+        });
+    }
 
     $('.edit_section').click(function() {
         _reset(); // Reset form fields
@@ -211,24 +215,32 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                $.ajax({
-                    url: 'ajax.php?action=delete_section',
-                    method: 'POST',
-                    data: { id: id },
-                    success: function(resp) {
-                        if (resp == 1) {
-                            Swal.fire('Deleted!', 'Your section has been deleted.', 'success').then(function() {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire('Error!', 'Failed to delete section.', 'error');
-                        }
-                    }
-                });
+                delete_section(id);
             }
         });
     });
 
+    function delete_section(id) {
+        $.ajax({
+            url: 'ajax.php?action=delete_section',
+            method: 'POST',
+            data: { id: id },
+            success: function(resp) {
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Data successfully deleted.',
+                        showConfirmButton: true,
+                    }).then(function() {
+                        location.reload();
+                    });
+                }
+            }
+        });
+    }
+
+    // Initialize DataTable
     $(document).ready(function() {
         $('#sectionTable').DataTable();
     });
