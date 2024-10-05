@@ -4,6 +4,7 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
+// Example: $_SESSION['dept_id'] = $user['dept_id'];
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 ?>
 <!-- Include SweetAlert CSS -->
@@ -57,7 +58,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <label for="cyear" class="col-sm-3 control-label">Year</label>
                                     <div class="col-sm-12">
-                                        <select class="form-control" name="cyear" id="cyear" required>
+                                        <select class="form-control" name="cyear" id="cyear">
                                             <option value="" disabled selected>Select Year</option>
                                             <option value="1st">1st</option>
                                             <option value="2nd">2nd</option>
@@ -69,7 +70,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Section</label>
-                                        <input type="text" class="form-control" name="section" id="section" required>
+                                        <input type="text" class="form-control" name="section" id="section">
                                     </div>
                                 </div>
                             </form>
@@ -136,17 +137,6 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
     }
 
     $('#saveSectionBtn').click(function() {
-        // Check if all required fields are filled out
-        if ($('#course').val() === "" || $('#cyear').val() === "" || $('#section').val() === "") {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Warning!',
-                text: 'Please fill out all required fields.',
-                showConfirmButton: true
-            });
-            return; // Exit the function if validation fails
-        }
-        
         $('#manage-section').submit();
     });
 
@@ -176,8 +166,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         icon: 'success',
                         title: 'Success',
                         text: 'Data successfully updated!',
-                        showConfirmButton: false,
-                        timer: 1500
+                        showConfirmButton: true,
                     }).then(function() {
                         location.reload();
                     });
@@ -192,32 +181,26 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     Swal.fire({
                         icon: 'warning',
                         title: 'Warning!',
-                        text: 'An error occurred while processing your request.',
+                        text: 'Please fill out all required fields.',
                         showConfirmButton: true
                     });
                 }
-                _reset();
-                $('#sectionModal').modal('hide');
             }
         });
     });
 
     $('.edit_section').click(function() {
-        var id = $(this).attr('data-id');
-        var course = $(this).attr('data-course');
-        var cyear = $(this).attr('data-cyear');
-        var section = $(this).attr('data-section');
-
-        $('#manage-section input[name=id]').val(id);
-        $('#manage-section select[name=course]').val(course);
-        $('#manage-section select[name=cyear]').val(cyear);
-        $('#manage-section input[name=section]').val(section);
-
+        _reset(); // Reset form fields
+        var cat = $('#manage-section');
+        cat.find("[name='id']").val($(this).data('id'));
+        cat.find("[name='course']").val($(this).data('course'));
+        cat.find("[name='cyear']").val($(this).data('cyear'));
+        cat.find("[name='section']").val($(this).data('section'));
         $('#sectionModal').modal('show');
     });
 
     $('.delete_section').click(function() {
-        var id = $(this).attr('data-id');
+        var id = $(this).data('id');
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -228,32 +211,33 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                $.ajax({
-                    url: 'ajax.php?action=delete_section',
-                    method: 'POST',
-                    data: { id: id },
-                    success: function(resp) {
-                        if (resp == 1) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Deleted!',
-                                text: 'Your section has been deleted.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(function() {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'An error occurred while deleting the section.',
-                                showConfirmButton: true
-                            });
-                        }
-                    }
-                });
+                delete_section(id);
             }
         });
+    });
+
+    function delete_section(id) {
+        $.ajax({
+            url: 'ajax.php?action=delete_section',
+            method: 'POST',
+            data: { id: id },
+            success: function(resp) {
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Data successfully deleted.',
+                        showConfirmButton: true,
+                    }).then(function() {
+                        location.reload();
+                    });
+                }
+            }
+        });
+    }
+
+    // Initialize DataTable
+    $(document).ready(function() {
+        $('#sectionTable').DataTable();
     });
 </script>
