@@ -4,18 +4,23 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
+// Example: $_SESSION['dept_id'] = $user['dept_id'];
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 ?>
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 <!-- Include DataTables CSS (optional) -->
 <link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
+
 <!-- Include SweetAlert JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <!-- Include jQuery and Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <!-- Include DataTables JS (optional) -->
 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 
@@ -53,7 +58,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <label for="cyear" class="col-sm-3 control-label">Year</label>
                                     <div class="col-sm-12">
-                                        <select class="form-control" name="cyear" id="cyear" required>
+                                        <select class="form-control" name="cyear" id="cyear">
                                             <option value="" disabled selected>Select Year</option>
                                             <option value="1st">1st</option>
                                             <option value="2nd">2nd</option>
@@ -65,7 +70,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Section</label>
-                                        <input type="text" class="form-control" name="section" id="section" required>
+                                        <input type="text" class="form-control" name="section" id="section">
                                     </div>
                                 </div>
                             </form>
@@ -77,6 +82,8 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     </div>
                 </div>
             </div>
+            <!-- Modal for Section Form -->
+
             <!-- Table Panel -->
             <div class="col-md-12">
                 <div class="card">
@@ -144,45 +151,39 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             processData: false,
             method: 'POST',
             success: function(resp) {
-                // Assuming resp returns the status of the operation
-                switch(resp) {
-                    case '1':
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: 'Data successfully added!',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(function() {
-                            location.reload();
-                        });
-                        break;
-                    case '2':
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: 'Data successfully updated!',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(function() {
-                            location.reload();
-                        });
-                        break;
-                    case '3':
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Duplicate Entry!',
-                            text: 'Section already exists for the given course and year.',
-                            showConfirmButton: true
-                        });
-                        break;
-                    default:
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Warning!',
-                            text: 'Please fill out all required fields.',
-                            showConfirmButton: true
-                        });
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Data successfully added!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function() {
+                        location.reload();
+                    });
+                } else if (resp == 2) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Data successfully updated!',
+                        showConfirmButton: true,
+                    }).then(function() {
+                        location.reload();
+                    });
+                } else if (resp == 3) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Duplicate Entry!',
+                        text: 'Section already exists for the given course and year.',
+                        showConfirmButton: true
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Warning!',
+                        text: 'Please fill out all required fields.',
+                        showConfirmButton: true
+                    });
                 }
             }
         });
@@ -229,13 +230,6 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         showConfirmButton: true,
                     }).then(function() {
                         location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Could not delete the section.',
-                        showConfirmButton: true,
                     });
                 }
             }
