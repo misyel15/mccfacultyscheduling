@@ -17,7 +17,7 @@ function save_section() {
     $data = "course = '$course', ";
     $data .= "year = '$cyear', ";
     $data .= "section = '$section', ";
-    $data .= "dept_id = '$dept_id' "; // Add dept_id to the data string
+   
 
     // Check for duplicate section
     if (empty($id)) {
