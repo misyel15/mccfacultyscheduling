@@ -234,9 +234,9 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     });
                 } else {
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Failed to delete the section.',
+                        icon: 'success',
+                        title: 'save!',
+                        text: 'successful to save the section.',
                         showConfirmButton: true
                     });
                 }
