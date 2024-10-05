@@ -212,7 +212,7 @@ function save_course() {
             } else {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Updated!',
+                    title: 'Saved!',
                     text: 'Course successfully updated.',
                     showConfirmButton: true,
                 }).then(function() {
