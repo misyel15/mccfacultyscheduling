@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("ss", $username, $hashed_password);
     $stmt->execute();
     $result = $stmt->get_result();
-da
+
     if ($result->num_rows > 0) {
         $user_data = $result->fetch_assoc();
 
