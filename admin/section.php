@@ -4,8 +4,52 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
-// Example: $_SESSION['dept_id'] = $user['dept_id'];
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
+
+// Function to save section
+function save_section() {
+    global $conn; // Use the global database connection
+    extract($_POST);
+    // Assuming the dept_id is stored in the session
+    $dept_id = $_SESSION['dept_id'];
+
+    // Build the data string with dept_id included
+    $data = "course = '$course', ";
+    $data .= "year = '$cyear', ";
+    $data .= "section = '$section', ";
+   
+
+    // Check for duplicate section
+    if (empty($id)) {
+        $check = $conn->query("SELECT * FROM section WHERE course = '$course' AND year = '$cyear' AND section = '$section'");
+    } else {
+        $check = $conn->query("SELECT * FROM section WHERE course = '$course' AND year = '$cyear' AND section = '$section' AND id != '$id'");
+    }
+
+    if ($check->num_rows > 0) {
+        return 3; // Return a specific code for duplicate entry
+    }
+
+    if (empty($id)) {
+        // Insert new section
+        $save = $conn->query("INSERT INTO section SET $data");
+    } else {
+        // Update existing section
+        $save = $conn->query("UPDATE section SET $data WHERE id = $id");
+    }
+
+    if ($save) {
+        return empty($id) ? 1 : 2; // Return 1 for insert and 2 for update
+    }
+    return 0; // Return 0 if the save operation fails
+}
+
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Call the save_section function and echo the response
+    echo save_section();
+    exit; // Prevent further execution
+}
 ?>
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -103,7 +147,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                             <tbody>
                                 <?php 
                                 $i = 1;
-                                $room = $conn->query("SELECT * FROM section ORDER BY id ASC");
+                                $room = $conn->query("SELECT * FROM section WHERE dept_id = '$dept_id' ORDER BY id ASC");
                                 while($row = $room->fetch_assoc()):
                                 ?>
                                 <tr>
@@ -137,6 +181,17 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
     }
 
     $('#saveSectionBtn').click(function() {
+        // Check if all required fields are filled out
+        if ($('#course').val() === "" || $('#cyear').val() === "" || $('#section').val() === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: 'Please fill out all required fields.',
+                showConfirmButton: true
+            });
+            return; // Exit the function if validation fails
+        }
+        
         $('#manage-section').submit();
     });
 
@@ -144,7 +199,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         e.preventDefault();
 
         $.ajax({
-            url: 'ajax.php?action=save_section',
+            url: '', // Point to the current file for form submission
             data: new FormData($(this)[0]),
             cache: false,
             contentType: false,
@@ -166,7 +221,8 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         icon: 'success',
                         title: 'Success',
                         text: 'Data successfully updated!',
-                        showConfirmButton: true,
+                        showConfirmButton: false,
+                        timer: 1500
                     }).then(function() {
                         location.reload();
                     });
@@ -185,6 +241,14 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         showConfirmButton: true
                     });
                 }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while saving the data.',
+                    showConfirmButton: true
+                });
             }
         });
     });
@@ -211,33 +275,25 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                delete_section(id);
+                $.ajax({
+                    url: '', // Point to the current file for delete request
+                    method: 'POST',
+                    data: { id: id },
+                    success: function(resp) {
+                        if (resp == 1) {
+                            Swal.fire('Deleted!', 'Your section has been deleted.', 'success').then(function() {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete the section.', 'error');
+                        }
+                    }
+                });
             }
         });
     });
 
-    function delete_section(id) {
-        $.ajax({
-            url: 'ajax.php?action=delete_section',
-            method: 'POST',
-            data: { id: id },
-            success: function(resp) {
-                if (resp == 1) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: 'Data successfully deleted.',
-                        showConfirmButton: true,
-                    }).then(function() {
-                        location.reload();
-                    });
-                }
-            }
-        });
-    }
-
-    // Initialize DataTable
     $(document).ready(function() {
-        $('#sectionTable').DataTable();
+        $('#sectionTable').DataTable(); // Initialize DataTable
     });
 </script>
