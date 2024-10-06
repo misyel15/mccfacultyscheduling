@@ -34,7 +34,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         <?php
                         // PHP code to generate table headers
                         $rooms = array();
-                        $roomsdata = $conn->query("SELECT * FROM roomlist order by room_id;");
+                        $roomsdata = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' order by room_id;");
                         while ($r = $roomsdata->fetch_assoc()) {
                             $rooms[] = $r['room_name'];
                         }
@@ -106,7 +106,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                         <?php
                         // PHP code to generate table headers
                         $rooms = array();
-                        $roomsdata = $conn->query("SELECT * FROM roomlist order by room_id;");
+                        $roomsdata = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id'order by room_id;");
                         while ($r = $roomsdata->fetch_assoc()) {
                             $rooms[] = $r['room_name'];
                         }
@@ -336,6 +336,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         </button>
       </div>
       <form id="newScheduleForm">
+	  <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
         <div class="modal-body">
 			<div class="row">
 				<div class="col-md-12">

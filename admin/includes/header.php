@@ -9,7 +9,6 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
 }
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -49,6 +48,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
     <link href="css/theme.css" rel="stylesheet" media="all">
 
 </head>
+
 <style>
 .header-mobile {
     position: fixed; /* Fixes the header at the top */
@@ -292,7 +292,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
 
        
             <div class="account-dropdown__footer">
-                <a href="admin/ajax.php?action=logout">
+                <a href="ajax.php?action=logout">
                     <i class="zmdi zmdi-power"></i>Logout
                 </a>
             </div>
@@ -333,32 +333,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
 
   	
 </head>
-<script>
-        // Disable right-click
-        document.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
-        }, false);
 
-        // Disable F12 (Inspect Element)
-        document.addEventListener('keydown', function (e) {
-            // F12
-            if (e.keyCode === 123) {
-                e.preventDefault();
-            }
-            // Ctrl + Shift + I
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-                e.preventDefault();
-            }
-        }, false);
-
-        // Disable Ctrl + U (View Source)
-        document.addEventListener('keydown', function (e) {
-            // Ctrl + U
-            if (e.ctrlKey && e.keyCode === 85) {
-                e.preventDefault();
-            }
-        }, false);
-    </script>
 </body>
 
 </html>

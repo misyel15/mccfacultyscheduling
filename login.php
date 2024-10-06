@@ -199,34 +199,34 @@ include 'headers.php';
       });
     });
   </script>
-     </script>
+   </script>
 
-    <!-- Anti-inspect JavaScript -->
-    <script>
-    // Disable right-click
-    document.addEventListener('contextmenu', function (e) {
+<!-- Anti-inspect JavaScript -->
+<script>
+// Disable right-click
+document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+}, false);
+
+// Disable F12 (Inspect Element) and Ctrl+Shift+I
+document.addEventListener('keydown', function (e) {
+    // F12
+    if (e.keyCode === 123) {
         e.preventDefault();
-    }, false);
+    }
+    // Ctrl + Shift + I
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+        e.preventDefault();
+    }
+}, false);
 
-    // Disable F12 (Inspect Element) and Ctrl+Shift+I
-    document.addEventListener('keydown', function (e) {
-        // F12
-        if (e.keyCode === 123) {
-            e.preventDefault();
-        }
-        // Ctrl + Shift + I
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-            e.preventDefault();
-        }
-    }, false);
-
-    // Disable Ctrl+U (View Source)
-    document.addEventListener('keydown', function (e) {
-        if (e.ctrlKey && e.keyCode === 85) {
-            e.preventDefault();
-        }
-    }, false);
-    </script>
+// Disable Ctrl+U (View Source)
+document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey && e.keyCode === 85) {
+        e.preventDefault();
+    }
+}, false);
+</script>
 </body>
 
 </html>

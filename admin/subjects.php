@@ -1,22 +1,26 @@
 <?php
-session_start(); // Start the session
+session_start();
 include('db_connect.php');
 include 'includes/header.php';
 
-// Assuming the user department ID is stored in the session after login
-$dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
+// Assuming you store the department ID in the session during login
+// Example: $_SESSION['dept_id'] = $user['dept_id'];
+$dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 ?>
-
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 <!-- Include DataTables CSS (optional) -->
 <link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
+
 <!-- Include SweetAlert JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <!-- Include jQuery and Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <!-- Include DataTables JS (optional) -->
 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 
@@ -36,7 +40,7 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                         <!-- Search Section -->
                         <div class="row mb-3">
                             <div class="col-md-12">
-                            </div>
+                                   </div>
                         </div>
 
                         <!-- Filter Section -->
@@ -78,12 +82,7 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                                 <tbody>
                                     <?php 
                                     $i = 1;
-                                    // Fetch subjects based on department ID
-                                    if ($dept_id) {
-                                        $subject = $conn->query("SELECT * FROM subjects WHERE dept_id = '$dept_id' ORDER BY id ASC");
-                                    } else {
-                                        $subject = $conn->query("SELECT * FROM subjects ORDER BY id ASC");
-                                    }
+                                    $subject = $conn->query("SELECT * FROM subjects WHERE dept_id = '$dept_id' ORDER BY id ASC");
                                     while($row = $subject->fetch_assoc()):
                                     ?>
                                     <tr class="subject-row" data-course="<?php echo $row['course']; ?>" data-semester="<?php echo $row['semester']; ?>">
@@ -130,7 +129,9 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                         </div>
                         <form action="" id="manage-subject">
                             <div class="modal-body">
-                                <input type="hidden" name="id">
+                            <input type="hidden" name="id">
+                            <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>"> <!-- Hidden dept_id input -->
+    
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Subject</label>
@@ -140,139 +141,236 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Description</label>
-                                        <textarea class="form-control" name="description"></textarea>
+                                        <textarea class="form-control" cols="30" rows='3' name="description"></textarea>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Total Units</label>
-                                        <input type="number" class="form-control" name="total_units" required>
+                                        <input type="text" class="form-control" name="units">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Lec Units</label>
-                                        <input type="number" class="form-control" name="Lec_Units" required>
+                                        <input type="text" class="form-control" name="lec_units">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Lab Units</label>
-                                        <input type="number" class="form-control" name="Lab_Units" required>
+                                        <input type="text" class="form-control" name="lab_units">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
                                         <label class="control-label">Hours</label>
-                                        <input type="number" class="form-control" name="hours" required>
+                                        <input type="text" class="form-control" name="hours">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
-                                        <label class="control-label">Course</label>
-                                        <select class="form-control" name="course" required>
-                                            <option value="">Select Course</option>
+                                        <label for="course" class="control-label">Course</label>
+                                        <select class="form-control" name="course" id="course" required>
+                                            <option value="0" disabled selected>Select Course</option>
                                             <?php 
                                                 $sql = "SELECT * FROM courses";
                                                 $query = $conn->query($sql);
-                                                while($row = $query->fetch_array()):
+                                                while($row= $query->fetch_array()):
                                                     $course = $row['course'];
-                                            ?>
-                                            <option value="<?php echo $course; ?>"><?php echo ucwords($course); ?></option>
+                                                ?>
+                                            <option value="<?php echo  $course ?>"><?php echo ucwords($course) ?></option>
                                             <?php endwhile; ?>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
-                                        <label class="control-label">Year</label>
-                                        <input type="text" class="form-control" name="year" required>
+                                        <label for="cyear" class="control-label">Year</label>
+                                        <select class="form-control" name="cyear" id="cyear">
+                                            <option value="" disabled selected>Select Year</option>
+                                            <option value="1st">1st</option>
+                                            <option value="2nd">2nd</option>
+                                            <option value="3rd">3rd</option>
+                                            <option value="4th">4th</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
-                                        <label class="control-label">Semester</label>
-                                        <input type="text" class="form-control" name="semester" required>
+                                        <label for="semester" class="control-label">Semester</label>
+                                        <select class="form-control" name="semester" id="semester">
+                                            <option value="" disabled selected>Select Semester</option>
+                                            <option value="1st">1st</option>
+                                            <option value="2nd">2nd</option>
+                                            <option value="3nd">Summer</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
-                                        <label class="control-label">Specialization</label>
-                                        <input type="text" class="form-control" name="specialization">
+                                        <label for="specialization" class="control-label">Specialization</label>
+                                        <select class="form-control" name="specialization" id="specialization">
+                                            <option value="" disabled selected>Select Specialization</option>
+                                            <option value="Major">Major</option>
+                                            <option value="Minor">Minor</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Save</button>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary">Save changes</button>
+                               
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
-            <!-- End Modal -->
+            <!-- Modal -->
         </div>
     </div>
 </div>
 
-<!-- Include script for handling form submission -->
 <script>
 $(document).ready(function() {
-    $('#subjectTable').DataTable(); // Initialize DataTable
+    // Initialize DataTable
+    $('#subjectTable').DataTable();
 
-    // Handle form submission
+    // Add new subject
     $('#manage-subject').submit(function(e) {
-        e.preventDefault(); // Prevent default form submission
+        e.preventDefault();
+        
+        // Basic input validation
+        var subject = $('[name="subject"]').val().trim();
+        var description = $('[name="description"]').val().trim();
+        var units = $('[name="units"]').val().trim();
+        var lec_units = $('[name="lec_units"]').val().trim();
+        var lab_units = $('[name="lab_units"]').val().trim();
+        var hours = $('[name="hours"]').val().trim();
+        var course = $('[name="course"]').val();
+        var cyear = $('[name="cyear"]').val();
+        var semester = $('[name="semester"]').val();
+        var specialization = $('[name="specialization"]').val();
+
+        if (!subject || !course || !cyear || !semester) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please fill in all required fields!',
+            });
+            return;
+        }
+
         $.ajax({
-            url: 'save_subject.php', // PHP file to handle form submission
+            url: 'ajax.php?action=save_subject',
+            data: new FormData($(this)[0]),
             method: 'POST',
-            data: $(this).serialize(), // Serialize form data
-            success: function(response) {
-                if (response == 'success') {
-                    Swal.fire('Success!', 'Subject has been saved.', 'success');
-                    $('#subjectModal').modal('hide');
-                    setTimeout(() => {
-                        location.reload(); // Reload page to see changes
-                    }, 1000);
+            processData: false,
+            contentType: false,
+            success: function(resp) {
+                if (resp == 1) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Subject successfully saved!',
+                        showConfirmButton: true,
+                        
+                    }).then((result) => {
+                        if (result.dismiss === Swal.DismissReason.timer) {
+                            location.reload();
+                        }
+                    });
                 } else {
-                    Swal.fire('Error!', response, 'error'); // Show error alert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error saving subject!',
+                        text: resp // Display the server response in case of error
+                    });
                 }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong with the AJAX request!',
+                });
             }
         });
     });
 
-    // Edit button click event
+    // Edit subject
     $('.edit_subject').click(function() {
-        const id = $(this).data('id');
-        const subject = $(this).data('subject');
-        const description = $(this).data('description');
-        const totalUnits = $(this).data('units');
-        const lecUnits = $(this).data('lecunits');
-        const labUnits = $(this).data('labunits');
-        const course = $(this).data('course');
-        const year = $(this).data('year');
-        const semester = $(this).data('semester');
-        const specialization = $(this).data('special');
-        const hours = $(this).data('hours');
-        
-        // Populate modal fields
-        $('#subjectModal input[name="id"]').val(id);
-        $('#subjectModal input[name="subject"]').val(subject);
-        $('#subjectModal textarea[name="description"]').val(description);
-        $('#subjectModal input[name="total_units"]').val(totalUnits);
-        $('#subjectModal input[name="Lec_Units"]').val(lecUnits);
-        $('#subjectModal input[name="Lab_Units"]').val(labUnits);
-        $('#subjectModal input[name="hours"]').val(hours);
-        $('#subjectModal select[name="course"]').val(course);
-        $('#subjectModal input[name="year"]').val(year);
-        $('#subjectModal input[name="semester"]').val(semester);
-        $('#subjectModal input[name="specialization"]').val(specialization);
-
-        $('#subjectModal').modal('show'); // Show the modal
+        var form = $('#manage-subject');
+        form.find("[name='id']").val($(this).data('id'));
+        form.find("[name='subject']").val($(this).data('subject'));
+        form.find("[name='description']").val($(this).data('description'));
+        form.find("[name='units']").val($(this).data('units'));
+        form.find("[name='lec_units']").val($(this).data('lecunits'));
+        form.find("[name='lab_units']").val($(this).data('labunits'));
+        form.find("[name='course']").val($(this).data('course'));
+        form.find("[name='cyear']").val($(this).data('year'));
+        form.find("[name='semester']").val($(this).data('semester'));
+        form.find("[name='specialization']").val($(this).data('special'));
+        form.find("[name='hours']").val($(this).data('hours'));
     });
 
-    // Additional Delete functionality can be added here
+    // Delete subject
+    $('.delete_subject').click(function() {
+        var id = $(this).data('id');
+        Swal.fire({
+            title: 'Are you sure you want to delete this subject?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: 'ajax.php?action=delete_subject',
+                    method: 'POST',
+                    data: { id: id },
+                    success: function(resp) {
+                        if (resp == 1) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Subject successfully deleted!',
+                                showConfirmButton: true,
+                             
+                            }).then((result) => {
+                                if (result.dismiss === Swal.DismissReason.timer) {
+                                    location.reload();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    // Filter functionality
+    $('#filter-course, #filter-semester').change(function() {
+        var courseFilter = $('#filter-course').val().toLowerCase();
+        var semesterFilter = $('#filter-semester').val().toLowerCase();
+
+        $('.subject-row').each(function() {
+            var course = $(this).data('course').toLowerCase();
+            var semester = $(this).data('semester').toLowerCase();
+            var show = true;
+
+            if (courseFilter && course !== courseFilter) {
+                show = false;
+            }
+
+            if (semesterFilter && semester !== semesterFilter) {
+                show = false;
+            }
+
+            $(this).toggle(show);
+        });
+    });
 });
 
 </script>
-
