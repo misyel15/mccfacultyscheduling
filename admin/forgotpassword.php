@@ -1,38 +1,122 @@
-<?php
+<?php 
 session_start();
 include("db_connect.php");
-include 'includes/style.php';
+include 'includes/style.php'; 
 include 'includes/head.php'; 
 
-$error = "";
-$msg = "";
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-if (isset($_GET['email']) && isset($_GET['token'])) {
-    $email = mysqli_real_escape_string($conn, $_GET['email']);
-    $token = mysqli_real_escape_string($conn, $_GET['token']);
+require 'phpmailer/src/Exception.php';
+require 'phpmailer/src/PHPMailer.php';
+require 'phpmailer/src/SMTP.php';
 
-    // Check if the token exists in the database
-    $check = "SELECT * FROM users WHERE email = '$email' AND reset_token = '$token'";
+function sendEmail($email, $reset_token) {
+    $mail = new PHPMailer(true);
+    try {
+        //Server settings
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'your_email@gmail.com'; // Your SMTP username
+        $mail->Password = 'your_email_password'; // Your SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = 465;
+
+        //Recipients
+        $mail->setFrom('mccschedsystem@gmail.com', 'MCC SCHED SYSTEM ADMIN');
+        $mail->addAddress($email);
+
+        //Reset link
+        $resetLink = 'https://mccfacultyscheduling.com/update_password.php?email=' . urlencode($email) . '&token=' . $reset_token;
+
+        //Content
+        $mail->isHTML(true);
+        $mail->Subject = 'Reset Password Request';
+        $mail->Body = "
+        <html>
+        <head>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                }
+                .container {
+                    width: 80%;
+                    margin: 20px auto;
+                    padding: 20px;
+                    background-color: #fff;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                .button {
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: #fff;
+                    text-decoration: none;
+                    border-radius: 4px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <p>Hello,</p>
+                <p>We received a request to reset your password. Click the button below to reset it:</p>
+                <p><a href='" . $resetLink . "' class='button'>Reset Password</a></p>
+                <p>If you did not request a password reset, please ignore this email.</p>
+            </div>
+        </body>
+        </html>
+        ";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+if (isset($_POST['reset'])) {
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $check = "SELECT * FROM users WHERE email = '$email'";
     $result = mysqli_query($conn, $check);
 
-    if (!$result || mysqli_num_rows($result) == 0) {
-        $error = "Invalid token or email.";
-    } else {
-        // Process the password reset
-        if (isset($_POST['update_password'])) {
-            $new_password = mysqli_real_escape_string($conn, $_POST['new_password']);
-            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-            $update_query = "UPDATE users SET password = '$hashed_password', reset_token = NULL WHERE email = '$email'";
+    if ($result && mysqli_num_rows($result) == 1) {
+        $reset_token = bin2hex(random_bytes(10));
+        $update = "UPDATE users SET reset_token = '$reset_token', token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = '$email'";
 
-            if (mysqli_query($conn, $update_query)) {
-                $msg = "Password updated successfully. You can now log in.";
-            } else {
-                $error = "Failed to update password. Please try again.";
-            }
+        if (mysqli_query($conn, $update) && sendEmail($email, $reset_token)) {
+            echo '<script>
+                    window.onload = function() {
+                        Swal.fire({
+                            title: "Success!",
+                            text: "Reset password link sent to your email",
+                            icon: "success"
+                        });
+                    };
+                  </script>';
+        } else {
+            echo '<script>
+                    window.onload = function() {
+                        Swal.fire({
+                            title: "Error!",
+                            text: "Failed to send reset password link. Please try again later.",
+                            icon: "error"
+                        });
+                    };
+                  </script>';
         }
+    } else {
+        echo '<script>
+                window.onload = function() {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "No account associated with this email. Please check your email.",
+                        icon: "error"
+                    });
+                };
+              </script>';
     }
-} else {
-    $error = "Invalid request.";
 }
 ?>
 
@@ -41,7 +125,8 @@ if (isset($_GET['email']) && isset($_GET['token'])) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Update Password</title>
+    <title>Admin | Forgot Password</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
@@ -56,16 +141,19 @@ if (isset($_GET['email']) && isset($_GET['token'])) {
             height: 100vh;
             margin: 0;
         }
-        .update-box {
+
+        .login-box {
             width: 100%;
             max-width: 400px;
             margin: 20px;
         }
+
         .card {
             border-radius: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border: none;
         }
+
         .card-header {
             background-color: lightgray;
             color: black;
@@ -73,36 +161,47 @@ if (isset($_GET['email']) && isset($_GET['token'])) {
             padding: 1.5rem;
             border-radius: 20px 20px 0 0;
         }
+
+        .h1 {
+            font-size: 1.75rem;
+            font-weight: bold;
+        }
+
         .card-body {
             padding: 2rem;
         }
+
+        .input-group-text {
+            background-color: #f4f4f4;
+        }
+
+        .btn {
+            background-color: #007bff;
+            border: none;
+        }
     </style>
 </head>
-<body>
-<div class="update-box">
+<body class="hold-transition login-page">
+<div class="login-box">
     <div class="card card-outline card-primary">
         <div class="card-header text-center">
-            <a class="h1"><b>Update</b> Password</a>
+            <center><img src="assets/uploads/back.png" alt="System Logo" class="img-thumbnail rounded-circle" id="logo-img"></center>
+            <a class="h1"><b>Retrieve</b>|Account</a>
         </div>
         <div class="card-body">
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?= $error ?></div>
-            <?php endif; ?>
-            <?php if ($msg): ?>
-                <div class="alert alert-success"><?= $msg ?></div>
-            <?php endif; ?>
+            <p class="login-box-msg">You forgot your password? Here you can easily retrieve a new password.</p>
             <form action="" method="post">
                 <div class="input-group mb-3">
-                    <input type="password" name="new_password" class="form-control" placeholder="New Password" required>
+                    <input type="email" name="email" class="form-control" placeholder="Email" required>
                     <div class="input-group-append">
                         <div class="input-group-text">
-                            <span class="fas fa-lock"></span>
+                            <span class="fas fa-envelope"></span>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <button type="submit" name="update_password" class="btn btn-primary btn-block">Update Password</button>
+                        <button type="submit" name="reset" class="btn btn-primary btn-block">Request new password</button>
                     </div>
                 </div>
             </form>
@@ -113,11 +212,8 @@ if (isset($_GET['email']) && isset($_GET['token'])) {
     </div>
 </div>
 
-<!-- jQuery -->
 <script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
 <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
 <script src="dist/js/adminlte.min.js"></script>
 </body>
 </html>
