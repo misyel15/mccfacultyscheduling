@@ -33,7 +33,7 @@ function sendemail($email, $reset_token)
         $mail->addAddress($email);
 
         //Reset link
-        $resetLink = 'https://github.com/misyel15/mccfacultyscheduling/blob/main/admin/forgotpassword.php?email=' . urlencode($email) . '&token=' . $reset_token;
+        $resetLink = 'https://mccfacultyscheduling.com/forgot.php?email=' . urlencode($email) . '&token=' . $reset_token;
 
         //Content
         $mail->isHTML(true);
