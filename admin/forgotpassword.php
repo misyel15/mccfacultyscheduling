@@ -23,8 +23,8 @@ function sendResetEmail($email, $reset_token) {
         $mail->SMTPAuth = true;
         
         // Use environment variables to store sensitive credentials
-        $mail->Username = getenv('EMAIL_USER="your-email@gmail.com'); // Set your email via environment variable
-        $mail->Password = getenv('EMAIL_PASS="your-email-password');  // Set your email password via environment variable
+        $mail->Username = getenv("EMAIL_USER="your-email@gmail.com"); // Set your email via environment variable
+        $mail->Password = getenv("EMAIL_PASS="your-email-password"s);  // Set your email password via environment variable
 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port = 465;
