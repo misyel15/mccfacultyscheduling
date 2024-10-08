@@ -3,8 +3,8 @@ session_start();
 include("db_connect.php");
 include 'includes/style.php'; 
 include 'includes/head.php'; 
-$error="";
-$msg="";
+$error = "";
+$msg = "";
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -14,10 +14,8 @@ require 'phpmailer/src/Exception.php';
 require 'phpmailer/src/PHPMailer.php';
 require 'phpmailer/src/SMTP.php';
 
-function sendemail($email, $reset_token)
-{
+function sendemail($email, $reset_token) {
     $mail = new PHPMailer(true);
-
     try {
         //Server settings
         $mail->isSMTP();
@@ -33,11 +31,11 @@ function sendemail($email, $reset_token)
         $mail->addAddress($email);
 
         //Reset link
-        $resetLink = 'https://mccfacultyscheduling.com/forgot.php?email=' . urlencode($email) . '&token=' . $reset_token;
+        $resetLink = 'https://mccfacultyscheduling.com/update_password.php?email=' . urlencode($email) . '&token=' . $reset_token;
 
         //Content
         $mail->isHTML(true);
-        $mail->Subject = 'Here is your link to Reset the password of your MCC SCHED-SYSTEM Account';
+        $mail->Subject = 'Reset Password Request';
         $mail->Body = "
         <html>
         <head>
