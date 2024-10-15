@@ -136,7 +136,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
             <li class="has-sub"></li>
 
             <li><a href="home.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-            <li><a href="courses.php"><span class="fas fa-graduation-cap"></span> Courses</a></li>
+            <li><a href="courses.php"><span class="fa-try"></span> Courses</a></li>
             <li><a href="subjects.php"><i class="fas fa-book"></i> Subject</a></li>
             <li><a href="faculty.php"><i class="fas fa-chalkboard-teacher"></i> Faculty</a></li>
             <li><a href="room.php"><i class="fas fa-door-open"></i> Room</a></li>
