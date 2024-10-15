@@ -43,7 +43,8 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
     <link href="vendor/select2/select2.min.css" rel="stylesheet" media="all">
     <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
 
-    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
     <!-- Main CSS-->
     <link href="css/theme.css" rel="stylesheet" media="all">
 
