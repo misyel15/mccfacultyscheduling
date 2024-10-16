@@ -38,7 +38,6 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
     <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
     <!-- Main CSS-->
     <link href="css/theme.css" rel="stylesheet" media="all">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         /* Custom CSS */
         .header-mobile {
