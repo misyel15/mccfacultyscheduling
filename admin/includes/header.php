@@ -38,6 +38,9 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
     <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
     <!-- Main CSS-->
     <link href="css/theme.css" rel="stylesheet" media="all">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+</head>
 
     <style>
         /* Custom CSS */
@@ -103,10 +106,11 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
                             Mcc Faculty Scheduling
                         </div>
                         <button class="hamburger hamburger--slider" type="button">
-                            <span class="hamburger-box">
-                                <span class="hamburger-inner"></span>
-                            </span>
-                        </button>
+    <span class="hamburger-box">
+        <span class="hamburger-inner"></span>
+    </span>
+</button>
+
                     </div>
                 </div>
             </div>
