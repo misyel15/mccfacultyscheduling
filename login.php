@@ -125,7 +125,10 @@ include 'headers.php';
     <li class="nav-item" style="margin-left:20px; font-weight: bold;">
       <a class="nav-link" href="about.php">About</a>
     </li>
-
+   </h1>
+          <p class="lead">Here you can manage the scheduling of all faculty members efficiently and effectively. Our system helps you stay organized and up-to-date with the latest changes in the schedule.</p>
+        </div>
+      </div>
     <li class="nav-item dropdown" style="margin-left:20px; font-weight: bold;">
       <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Login
