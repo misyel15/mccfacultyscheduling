@@ -13,7 +13,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
 <head>
     <!-- Required meta tags-->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="au theme template">
     <meta name="author" content="Hau Nguyen">
     <meta name="keywords" content="au theme template">
@@ -38,7 +38,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
     <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
     <!-- Main CSS-->
     <link href="css/theme.css" rel="stylesheet" media="all">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         /* Custom CSS */
         .header-mobile {
@@ -109,135 +109,45 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['dept_id'])) {
             </span>
         </button>
     </div>
-
-    <nav class="navbar-mobile" id="navbar-mobile">
-        <div class="container-fluid">
-            <ul class="navbar-mobile__list list-unstyled">
-                <li><a href="home.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="courses.php"><i class="fas fa-book-open"></i> Courses</a></li>
-                <li><a href="subjects.php"><i class="fas fa-book"></i> Subject</a></li>
-                <li><a href="faculty.php"><i class="fas fa-user-tie"></i> Faculty</a></li>
-                <li><a href="room.php"><i class="fas fa-door-closed"></i> Room</a></li>
-                <li><a href="timeslot.php"><i class="fas fa-clock"></i> Timeslot</a></li>
-                <li><a href="section.php"><i class="fas fa-users"></i> Section</a></li>
-                <li><a href="roomassigntry.php"><i class="fas fa-tasks"></i> Room Assignment</a></li>
-                <li><a href="roomsched.php"><i class="fas fa-calendar-alt"></i> Room Schedule</a></li>
-                <li class="has-sub">
-                    <a class="js-arrow" href="#"><i class="fas fa-chart-bar"></i> Other Reports</a>
-                    <ul class="list-unstyled navbar__sub-list js-sub-list">
-                        <li><a href="class_sched.php"><i class="fas fa-table"></i> Class Schedule</a></li>
-                        <li><a href="load.php"><i class="fas fa-user"></i> Instructor's Load</a></li>
-                        <li><a href="summary.php"><i class="fas fa-list"></i> Summary</a></li>
-                        <li><a href="export.php"><i class="fas fa-file-export"></i> Export CSV</a></li>
-                    </ul>
-                </li>
-                <li><a href="users.php"><i class="fas fa-users-cog"></i> User</a></li>
-            </ul>
-        </div>
-    </nav>
 </header>
 
-<!-- MENU SIDEBAR -->
+<!-- Mobile Navbar -->
+<nav class="navbar-mobile" id="navbar-mobile">
+    <ul class="navbar-mobile__list list-unstyled">
+        <li><a href="home.php"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="courses.php"><i class="fas fa-book-open"></i> Courses</a></li>
+        <li><a href="subjects.php"><i class="fas fa-book"></i> Subject</a></li>
+        <li><a href="faculty.php"><i class="fas fa-user-tie"></i> Faculty</a></li>
+        <li><a href="room.php"><i class="fas fa-door-closed"></i> Room</a></li>
+        <li><a href="timeslot.php"><i class="fas fa-clock"></i> Timeslot</a></li>
+        <li><a href="section.php"><i class="fas fa-users"></i> Section</a></li>
+        <li><a href="roomassigntry.php"><i class="fas fa-tasks"></i> Room Assignment</a></li>
+        <li><a href="roomsched.php"><i class="fas fa-calendar-alt"></i> Room Schedule</a></li>
+        <li><a href="users.php"><i class="fas fa-users-cog"></i> User</a></li>
+    </ul>
+</nav>
+
+<!-- Desktop Sidebar -->
 <aside class="menu-sidebar d-none d-lg-block">
     <div class="logo">
-        <img src="assets/uploads/mcclogo.jpg" style="height: 50px; width: 50px;" alt="Mcc Faculty Scheduling" />
-        Mcc Faculty Scheduling
+        <img src="assets/uploads/mcclogo.jpg" alt="MCC Faculty Scheduling" style="height: 50px; width: 50px;" />
+        <h2 style="color: white;">MCC Faculty Scheduling</h2>
     </div>
     <div class="menu-sidebar__content js-scrollbar1">
-        <nav class="navbar-sidebar">
-            <ul class="list-unstyled navbar__list">
-                <li><a href="home.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="courses.php"><i class="fas fa-book-open"></i> Courses</a></li>
-                <li><a href="subjects.php"><i class="fas fa-book"></i> Subject</a></li>
-                <li><a href="faculty.php"><i class="fas fa-user-tie"></i> Faculty</a></li>
-                <li><a href="room.php"><i class="fas fa-door-closed"></i> Room</a></li>
-                <li><a href="timeslot.php"><i class="fas fa-clock"></i> Timeslot</a></li>
-                <li><a href="section.php"><i class="fas fa-users"></i> Section</a></li>
-                <li><a href="roomassigntry.php"><i class="fas fa-tasks"></i> Room Assignment</a></li>
-                <li><a href="roomsched.php"><i class="fas fa-calendar-alt"></i> Room Schedule</a></li>
-                <li class="has-sub">
-                    <a class="js-arrow" href="#"><i class="fas fa-chart-bar"></i> Other Reports</a>
-                    <ul class="list-unstyled navbar__sub-list js-sub-list">
-                        <li><a href="class_sched.php"><i class="fas fa-table"></i> Class Schedule</a></li>
-                        <li><a href="load.php"><i class="fas fa-user"></i> Instructor's Load</a></li>
-                        <li><a href="summary.php"><i class="fas fa-list"></i> Summary</a></li>
-                        <li><a href="export.php"><i class="fas fa-file-export"></i> Export CSV</a></li>
-                    </ul>
-                </li>
-                <li><a href="users.php"><i class="fas fa-users-cog"></i> User</a></li>
-            </ul>
-        </nav>
-    </div><!-- HEADER MOBILE -->
-<header class="header-mobile">
-    <div class="hamburger-container">
-        <button class="hamburger hamburger--slider" type="button" id="hamburger-btn">
-            <span class="hamburger-box">
-                <span class="hamburger-inner"></span>
-            </span>
-        </button>
-    </div>
-
-    <nav class="navbar-mobile" id="navbar-mobile">
-        <div class="container-fluid">
-            <ul class="navbar-mobile__list list-unstyled">
-                <li><a href="home.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="courses.php"><i class="fas fa-book-open"></i> Courses</a></li>
-                <li><a href="subjects.php"><i class="fas fa-book"></i> Subject</a></li>
-                <li><a href="faculty.php"><i class="fas fa-user-tie"></i> Faculty</a></li>
-                <li><a href="room.php"><i class="fas fa-door-closed"></i> Room</a></li>
-                <li><a href="timeslot.php"><i class="fas fa-clock"></i> Timeslot</a></li>
-                <li><a href="section.php"><i class="fas fa-users"></i> Section</a></li>
-                <li><a href="roomassigntry.php"><i class="fas fa-tasks"></i> Room Assignment</a></li>
-                <li><a href="roomsched.php"><i class="fas fa-calendar-alt"></i> Room Schedule</a></li>
-                <li class="has-sub">
-                    <a class="js-arrow" href="#"><i class="fas fa-chart-bar"></i> Other Reports</a>
-                    <ul class="list-unstyled navbar__sub-list js-sub-list">
-                        <li><a href="class_sched.php"><i class="fas fa-table"></i> Class Schedule</a></li>
-                        <li><a href="load.php"><i class="fas fa-user"></i> Instructor's Load</a></li>
-                        <li><a href="summary.php"><i class="fas fa-list"></i> Summary</a></li>
-                        <li><a href="export.php"><i class="fas fa-file-export"></i> Export CSV</a></li>
-                    </ul>
-                </li>
-                <li><a href="users.php"><i class="fas fa-users-cog"></i> User</a></li>
-            </ul>
-        </div>
-    </nav>
-</header>
-
-<!-- MENU SIDEBAR -->
-<aside class="menu-sidebar d-none d-lg-block">
-    <div class="logo">
-        <img src="assets/uploads/mcclogo.jpg" style="height: 50px; width: 50px;" alt="Mcc Faculty Scheduling" />
-        Mcc Faculty Scheduling
-    </div>
-    <div class="menu-sidebar__content js-scrollbar1">
-        <nav class="navbar-sidebar">
-            <ul class="list-unstyled navbar__list">
-                <li><a href="home.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="courses.php"><i class="fas fa-book-open"></i> Courses</a></li>
-                <li><a href="subjects.php"><i class="fas fa-book"></i> Subject</a></li>
-                <li><a href="faculty.php"><i class="fas fa-user-tie"></i> Faculty</a></li>
-                <li><a href="room.php"><i class="fas fa-door-closed"></i> Room</a></li>
-                <li><a href="timeslot.php"><i class="fas fa-clock"></i> Timeslot</a></li>
-                <li><a href="section.php"><i class="fas fa-users"></i> Section</a></li>
-                <li><a href="roomassigntry.php"><i class="fas fa-tasks"></i> Room Assignment</a></li>
-                <li><a href="roomsched.php"><i class="fas fa-calendar-alt"></i> Room Schedule</a></li>
-                <li class="has-sub">
-                    <a class="js-arrow" href="#"><i class="fas fa-chart-bar"></i> Other Reports</a>
-                    <ul class="list-unstyled navbar__sub-list js-sub-list">
-                        <li><a href="class_sched.php"><i class="fas fa-table"></i> Class Schedule</a></li>
-                        <li><a href="load.php"><i class="fas fa-user"></i> Instructor's Load</a></li>
-                        <li><a href="summary.php"><i class="fas fa-list"></i> Summary</a></li>
-                        <li><a href="export.php"><i class="fas fa-file-export"></i> Export CSV</a></li>
-                    </ul>
-                </li>
-                <li><a href="users.php"><i class="fas fa-users-cog"></i> User</a></li>
-            </ul>
-        </nav>
+        <ul class="list-unstyled navbar__list">
+            <li><a href="home.php"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="courses.php"><i class="fas fa-book-open"></i> Courses</a></li>
+            <li><a href="subjects.php"><i class="fas fa-book"></i> Subject</a></li>
+            <li><a href="faculty.php"><i class="fas fa-user-tie"></i> Faculty</a></li>
+            <li><a href="room.php"><i class="fas fa-door-closed"></i> Room</a></li>
+            <li><a href="timeslot.php"><i class="fas fa-clock"></i> Timeslot</a></li>
+            <li><a href="section.php"><i class="fas fa-users"></i> Section</a></li>
+            <li><a href="roomassigntry.php"><i class="fas fa-tasks"></i> Room Assignment</a></li>
+            <li><a href="roomsched.php"><i class="fas fa-calendar-alt"></i> Room Schedule</a></li>
+            <li><a href="users.php"><i class="fas fa-users-cog"></i> User</a></li>
+        </ul>
     </div>
 </aside>
-
-        </aside>
         <!-- END MENU SIDEBAR-->
 
         <!-- PAGE CONTAINER-->
