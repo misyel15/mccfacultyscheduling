@@ -155,10 +155,6 @@ include 'headers.php';
             <marquee style="font-size: 50px;">
               <span class="text-gradient" style="font-family: Algerian;">Welcome to MCC Faculty Scheduling </span>
             </marquee>
-          </h1>
-          <p class="lead">Here you can manage the scheduling of all faculty members efficiently and effectively. Our system helps you stay organized and up-to-date with the latest changes in the schedule.</p>
-        </div>
-      </div>
       
       <!-- Image Carousel Section -->
       <div class="col-lg-6 col-md-6">
