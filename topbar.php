@@ -9,7 +9,7 @@
   }
 
   .custom-navbar {
-    background-color: white; /* White */
+    background-color: white; /* Dark red white*/
    
   }
 
