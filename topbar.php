@@ -9,7 +9,7 @@
   }
 
   .custom-navbar {
-    background-color: white; /* Dark red color */
+    background-color: white; /* White */
    
   }
 
@@ -51,7 +51,7 @@
 <nav class="navbar navbar-expand-lg navbar-light fixed-top custom-navbar" style="padding: 0; min-height: 2.0rem;">
   <div class="container-fluid mt-2 mb-2">
     <a class="navbar-brand" href="#">
-      <img src="back.png" alt="Logo"> Faculty Scheduling System
+      <img src="back.png" alt="Logo"> Mcc Faculty Scheduling System
     </a>
     <ul class="navbar-nav ml-auto"> <!-- Aligns the nav items to the right -->
       <li class="nav-item dropdown">
