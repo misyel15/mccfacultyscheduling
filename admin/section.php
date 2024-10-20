@@ -85,15 +85,13 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             </div>
             <!-- Modal for Section Form -->
 
-            <!-- Table Panel -->
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <b>Section List</b>
-                    <span class="">
-                      <button class="btn btn-primary btn-sm" id="newEntryBtn"><i class="fa fa-user-plus"></i> New Entry</button>
-                        </span>
-                    </div>
+             <!-- Table Panel -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <b>Room List</b>
+                    <button class="btn btn-primary btn-sm" id="newEntryBtn"><i class="fa fa-user-plus"></i> New Entry</button>
+                </div>
                     <div class="card-body">
                         <table class="table table-bordered table-hover" id="sectionTable">
                             <thead>
