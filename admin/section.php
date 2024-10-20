@@ -83,9 +83,11 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     </div>
                 </div>
             </div>
-            <!-- Modal for Section Form -->
+             <!-- Modal -->
+        </div>
+        <!-- FORM Panel -->
 
-             <!-- Table Panel -->
+        <!-- Table Panel -->
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
