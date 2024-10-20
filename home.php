@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Mcc Faculty Scheduling</title>
+ <span class="logo-text ms-3">MCC Faculty Scheduling</span>
   <link rel="icon" href="back.png" type="image/png">
 
   <!-- Include Bootstrap for styling -->
