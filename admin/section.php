@@ -1,89 +1,65 @@
 <?php
-session_start();
+session_start(); // Start the session
 include('db_connect.php');
 include 'includes/header.php';
 
-// Assuming you store the department ID in the session during login
-// Example: $_SESSION['dept_id'] = $user['dept_id'];
-$dept_id = $_SESSION['dept_id']; // Get the department ID from the session
+// Assuming the user department ID is stored in the session after login
+$dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
 ?>
+
+
 <!-- Include SweetAlert CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<!-- Include Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<!-- Include DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css">
 
-<!-- Include DataTables CSS (optional) -->
-<link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
-
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include Bootstrap JS -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- Include DataTables JS -->
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
 <!-- Include SweetAlert JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Include jQuery and Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<!-- Include DataTables JS (optional) -->
-<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-
 <div class="container-fluid" style="margin-top:100px;">
-    <div class="col-lg-14">
-        <div class="row">
-            <!-- Modal for Section Form -->
-            <div class="modal fade" id="sectionModal" tabindex="-1" role="dialog" aria-labelledby="sectionModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="sectionModalLabel">Section Form</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <form action="" id="manage-section">
-                                <input type="hidden" name="id">
-                                <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
-                                <div class="form-group">
-                                    <label for="course" class="col-sm-4 control-label">Course</label>
-                                    <div class="col-sm-12">
-                                        <select class="form-control" name="course" id="course" required>
-                                            <option value="" disabled selected>Select Course</option>
-                                            <?php
-                                            $sql = "SELECT * FROM courses";
-                                            $query = $conn->query($sql);
-                                            while($prow = $query->fetch_assoc()){
-                                                echo "<option value='".$prow['course']."'>".$prow['course']."</option>";
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="cyear" class="col-sm-3 control-label">Year</label>
-                                    <div class="col-sm-12">
-                                        <select class="form-control" name="cyear" id="cyear">
-                                            <option value="" disabled selected>Select Year</option>
-                                            <option value="1st">1st</option>
-                                            <option value="2nd">2nd</option>
-                                            <option value="3rd">3rd</option>
-                                            <option value="4th">4th</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Section</label>
-                                        <input type="text" class="form-control" name="section" id="section">
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" id="saveSectionBtn">Save</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
-                </div>
+    <div class="row">
+        <!-- FORM Panel -->
+        <div class="col-md-4">
+        <!-- Modal -->
+<div class="modal fade" id="roomModal" tabindex="-1" aria-labelledby="roomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="roomModalLabel">Room Form</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-             <!-- Modal -->
+            <div class="modal-body">
+                <form action="" id="manage-room">
+                    <input type="hidden" name="id">
+                    <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Room ID</label>
+                        <input type="text" class="form-control" name="room_id" id="room_id">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Room</label>
+                        <input type="text" class="form-control" name="room" id="room">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="saveRoomBtn">Save</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+        </div>
+    </div>
+</div>
+
+            <!-- Modal -->
         </div>
         <!-- FORM Panel -->
 
@@ -94,31 +70,30 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     <b>Room List</b>
                     <button class="btn btn-primary btn-sm" id="newEntryBtn"><i class="fa fa-user-plus"></i> New Entry</button>
                 </div>
-                    <div class="card-body">
-                        <table class="table table-bordered table-hover" id="sectionTable">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="roomTable">
                             <thead>
                                 <tr>
                                     <th class="text-center">#</th>
-                                    <th class="text-center">Section</th>
+                                    <th class="text-center">Room</th>
                                     <th class="text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php 
-                                $i = 1;
-                                $room = $conn->query("SELECT * FROM section WHERE dept_id = '$dept_id' ORDER BY id ASC");
-                                while($row = $room->fetch_assoc()):
-                                ?>
+                            <?php 
+                                    $i = 1;
+                                    $course = $conn->query("SELECT * FROM roomlist WHERE dept_id = '$dept_id' ORDER BY id ASC");
+                                    while($row = $course->fetch_assoc()):
+                                    ?>
                                 <tr>
-                                    <td class="text-center"><?php echo $i++ ?></td>
+                                    <td class="text-center"><?php echo $row['room_id']; ?></td>
                                     <td>
-                                        <p>Course: <b><?php echo $row['course'] ?></b></p>
-                                        <p>Year: <small><b><?php echo $row['year'] ?></b></small></p>
-                                        <p>Section: <small><b><?php echo $row['section'] ?></b></small></p>
+                                        <p>Room name: <b><?php echo $row['room_name']; ?></b></p>
                                     </td>
                                     <td class="text-center">
-                                        <button class="btn btn-sm btn-primary edit_section" type="button" data-id="<?php echo $row['id'] ?>" data-course="<?php echo $row['course'] ?>" data-cyear="<?php echo $row['year'] ?>" data-section="<?php echo $row['section'] ?>"><i class="fas fa-edit"></i> Edit</button>
-                                        <button class="btn btn-sm btn-danger delete_section" type="button" data-id="<?php echo $row['id'] ?>"><i class="fas fa-trash-alt"></i> Delete</button>
+                                        <button class="btn btn-sm btn-primary edit_room" type="button" data-id="<?php echo $row['id']; ?>" data-room="<?php echo $row['room_name']; ?>" data-room_id="<?php echo $row['room_id']; ?>"><i class="fas fa-edit"></i> Edit</button>
+                                        <button class="btn btn-sm btn-danger delete_room" type="button" data-id="<?php echo $row['id']; ?>"><i class="fas fa-trash-alt"></i> Delete</button>
                                     </td>
                                 </tr>
                                 <?php endwhile; ?>
@@ -127,27 +102,51 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     </div>
                 </div>
             </div>
-            <!-- Table Panel -->
         </div>
-    </div>
+        <!-- Table Panel -->
+    </div>    
 </div>
 
 <script>
-    function _reset() {
-        $('#manage-section').get(0).reset();
-        $('#manage-section input').val('');
-        $('#manage-section select').val('');
-    }
-
-    $('#saveSectionBtn').click(function() {
-        $('#manage-section').submit();
+$(document).ready(function() {
+    // Initialize DataTable
+    $('#roomTable').DataTable({
+        responsive: true
     });
 
-    $('#manage-section').submit(function(e) {
+    // Show the modal when clicking the "New Entry" button
+    $('#newEntryBtn').click(function() {
+        $('#roomModal').modal('show');
+    });
+
+    // Reset form function
+    function _reset() {
+        $('#manage-room').get(0).reset();
+        $('#manage-room input').val('');
+    }
+
+    // Save Room
+    $('#saveRoomBtn').click(function() {
+        $('#manage-room').submit();
+    });
+
+    $('#manage-room').submit(function(e) {
         e.preventDefault();
+        let room = $("input[name='room']").val().trim();
+        let room_id = $("input[name='room_id']").val().trim();
+
+        if (room === '' || room_id === '') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: 'Please fill out all required fields.',
+                showConfirmButton: true
+            });
+            return;
+        }
 
         $.ajax({
-            url: 'ajax.php?action=save_section',
+            url: 'ajax.php?action=save_room',
             data: new FormData($(this)[0]),
             cache: false,
             contentType: false,
@@ -157,34 +156,26 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                 if (resp == 1) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Success',
-                        text: 'Data successfully added!',
-                        showConfirmButton: true,
-                        
+                        title: 'Success!',
+                        text: 'Room data successfully added.',
+                        showConfirmButton: true
                     }).then(function() {
                         location.reload();
                     });
                 } else if (resp == 2) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Success',
-                        text: 'Data successfully updated!',
-                        showConfirmButton: true,
+                        title: 'Success!',
+                        text: 'Room data successfully updated.',
+                        showConfirmButton: true
                     }).then(function() {
                         location.reload();
                     });
                 } else if (resp == 3) {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Duplicate Entry!',
-                        text: 'Section already exists for the given course and year.',
-                        showConfirmButton: true
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Warning!',
-                        text: 'Please fill out all required fields.',
+                        title: 'Error!',
+                        text: 'Room name or ID already exists.',
                         showConfirmButton: true
                     });
                 }
@@ -192,21 +183,22 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
         });
     });
 
-    $('.edit_section').click(function() {
-        _reset(); // Reset form fields
-        var cat = $('#manage-section');
-        cat.find("[name='id']").val($(this).data('id'));
-        cat.find("[name='course']").val($(this).data('course'));
-        cat.find("[name='cyear']").val($(this).data('cyear'));
-        cat.find("[name='section']").val($(this).data('section'));
-        $('#sectionModal').modal('show');
+    // Edit Room
+    $('.edit_room').click(function() {
+        var cat = $('#manage-room');
+        cat.get(0).reset();
+        cat.find("[name='id']").val($(this).attr('data-id'));
+        cat.find("[name='room']").val($(this).attr('data-room'));
+        cat.find("[name='room_id']").val($(this).attr('data-room_id'));
+        $('#roomModal').modal('show');
     });
 
-    $('.delete_section').click(function() {
-        var id = $(this).data('id');
+    // Delete Room
+    $('.delete_room').click(function() {
+        var id = $(this).attr('data-id');
         Swal.fire({
             title: 'Are you sure?',
-            text: "You won't be able to revert this!",
+            text: 'You will not be able to recover this data!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -214,14 +206,14 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                delete_section(id);
+                delete_room(id);
             }
         });
     });
 
-    function delete_section(id) {
+    function delete_room(id) {
         $.ajax({
-            url: 'ajax.php?action=delete_section',
+            url: 'ajax.php?action=delete_room',
             method: 'POST',
             data: { id: id },
             success: function(resp) {
@@ -229,8 +221,8 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                     Swal.fire({
                         icon: 'success',
                         title: 'Deleted!',
-                        text: 'Data successfully deleted.',
-                        showConfirmButton: true,
+                        text: 'Room data successfully deleted.',
+                        showConfirmButton: true
                     }).then(function() {
                         location.reload();
                     });
@@ -238,9 +230,5 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             }
         });
     }
-
-    // Initialize DataTable
-    $(document).ready(function() {
-        $('#sectionTable').DataTable();
-    });
+});
 </script>
