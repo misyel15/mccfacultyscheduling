@@ -91,8 +91,8 @@
   <!-- Navigation Bar -->
   <nav class="navbar navbar-expand-lg">
     <a class="navbar-brand" href="#">
-      <img src="mcclogo.jpg" alt="Logo"> MCC Faculty Scheduling System
-    </a>
+      <img src="mcclogo.jpg" alt="Logo" style="width: 40px; height: 30px; margin-right: 10px;">Mcc Faculty Scheduling System
+</a>
   </nav>
 
   <main id="main">
