@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>MCC Faculty Scheduling System</title>
-  <link rel="icon" href="back.png" type="image/png">
+  <link rel="icon" href="mcclogo.jpg" type="image/png">
 
   <!-- Include Bootstrap for styling -->
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -91,7 +91,7 @@
   <!-- Navigation Bar -->
   <nav class="navbar navbar-expand-lg">
     <a class="navbar-brand" href="#">
-      <img src="back.png" alt="Logo"> MCC Faculty Scheduling System
+      <img src="mcclogo.jpg" alt="Logo"> MCC Faculty Scheduling System
     </a>
   </nav>
 
