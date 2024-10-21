@@ -2,10 +2,10 @@
 <html lang="en">
 
 <head>
- <meta charset="utf-8">
+  <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>School Faculty Scheduling System</title>
-  <link rel="icon" href="assets/uploads/back.png" type="image/png">
+  <title>Mcc Faculty Scheduling System</title>
+  <link rel="icon" href="back.png" type="image/png">
   
   <!-- Include Bootstrap for styling -->
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
