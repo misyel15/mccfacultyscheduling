@@ -28,7 +28,7 @@
     height: 100vh;
     margin: 0;
     overflow: hidden;
-    background-image: url('background.jpg'); /* Replace with your image */
+    background-image: url('back.png'); /* Replace with your image */
     background-size: cover;
     background-position: center;
   }
