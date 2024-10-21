@@ -48,15 +48,13 @@
 <body>
 
   <!-- Navigation Bar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand" href="#">
-  <img src="mcclogo.jpg" alt="Logo" style="width: 40px; height: 30px; margin-right: 10px;">Mcc Faculty Scheduling System
+  <img src="mcclogo.jpg" alt="Logo" style="width: 40px; height: 30px; margin-right: 10px;"> Mcc Faculty Scheduling System
 </a>
 
 
-   
   </nav>
-
   <main id="main" class="bg-dark">
     <div id="login" class="col-md-4">
       <div class="card">
