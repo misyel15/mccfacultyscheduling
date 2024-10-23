@@ -14,8 +14,7 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
 <!-- Include DataTables CSS (optional) -->
 <link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
 
-<!-- Include SweetAlert JS -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <!-- Include jQuery and Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
