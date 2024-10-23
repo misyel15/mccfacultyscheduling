@@ -117,116 +117,95 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
                 </div>
             </div>
             <!-- Table Panel -->
- <!-- Modal -->
-            <div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="subjectModalLabel">Subject Form</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <form action="" id="manage-subject">
-                            <div class="modal-body">
-                            <input type="hidden" name="id">
-                            <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>"> <!-- Hidden dept_id input -->
-    
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Subject</label>
-                                        <input type="text" class="form-control" name="subject">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Description</label>
-                                        <textarea class="form-control" cols="30" rows='3' name="description"></textarea>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Total Units</label>
-                                        <input type="text" class="form-control" name="units">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Lec Units</label>
-                                        <input type="text" class="form-control" name="lec_units">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Lab Units</label>
-                                        <input type="text" class="form-control" name="lab_units">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label class="control-label">Hours</label>
-                                        <input type="text" class="form-control" name="hours">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label for="course" class="control-label">Course</label>
-                                        <select class="form-control" name="course" id="course" required>
-                                            <option value="0" disabled selected>Select Course</option>
-                                            <?php 
-                                                $sql = "SELECT * FROM courses";
-                                                $query = $conn->query($sql);
-                                                while($row= $query->fetch_array()):
-                                                    $course = $row['course'];
-                                                ?>
-                                            <option value="<?php echo  $course ?>"><?php echo ucwords($course) ?></option>
-                                            <?php endwhile; ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label for="cyear" class="control-label">Year</label>
-                                        <select class="form-control" name="cyear" id="cyear">
-                                            <option value="" disabled selected>Select Year</option>
-                                            <option value="1st">1st</option>
-                                            <option value="2nd">2nd</option>
-                                            <option value="3rd">3rd</option>
-                                            <option value="4th">4th</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label for="semester" class="control-label">Semester</label>
-                                        <select class="form-control" name="semester" id="semester">
-                                            <option value="" disabled selected>Select Semester</option>
-                                            <option value="1st">1st</option>
-                                            <option value="2nd">2nd</option>
-                                            <option value="3nd">Summer</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-12">
-                                        <label for="specialization" class="control-label">Specialization</label>
-                                        <select class="form-control" name="specialization" id="specialization">
-                                            <option value="" disabled selected>Select Specialization</option>
-                                            <option value="Major">Major</option>
-                                            <option value="Minor">Minor</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary">Save</button>
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                               
-                            </div>
-                        </form>
+                <!-- Modal -->
+<div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="subjectModalLabel">Subject Form</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="" id="manage-subject" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="id">
+                    <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
+
+                    <div class="form-group">
+                        <label class="control-label">Subject</label>
+                        <input type="text" class="form-control" name="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Description</label>
+                        <textarea class="form-control" cols="30" rows="3" name="description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Total Units</label>
+                        <input type="number" class="form-control" name="units" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Lec Units</label>
+                        <input type="number" class="form-control" name="lec_units" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Lab Units</label>
+                        <input type="number" class="form-control" name="lab_units" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Hours</label>
+                        <input type="number" class="form-control" name="hours" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="course" class="control-label">Course</label>
+                        <select class="form-control" name="course" id="course" required>
+                            <option value="0" disabled selected>Select Course</option>
+                            <?php 
+                                $sql = "SELECT * FROM courses";
+                                $query = $conn->query($sql);
+                                while($row = $query->fetch_array()):
+                            ?>
+                            <option value="<?php echo $row['course']; ?>"><?php echo ucwords($row['course']); ?></option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cyear" class="control-label">Year</label>
+                        <select class="form-control" name="cyear" id="cyear" required>
+                            <option value="" disabled selected>Select Year</option>
+                            <option value="1st">1st</option>
+                            <option value="2nd">2nd</option>
+                            <option value="3rd">3rd</option>
+                            <option value="4th">4th</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="semester" class="control-label">Semester</label>
+                        <select class="form-control" name="semester" id="semester" required>
+                            <option value="" disabled selected>Select Semester</option>
+                            <option value="1st">1st</option>
+                            <option value="2nd">2nd</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="specialization" class="control-label">Specialization</label>
+                        <select class="form-control" name="specialization" id="specialization" required>
+                            <option value="" disabled selected>Select Specialization</option>
+                            <option value="Major">Major</option>
+                            <option value="Minor">Minor</option>
+                        </select>
                     </div>
                 </div>
-            </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="save-btn">Save</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
             <!-- Modal -->
         </div>
     </div>
