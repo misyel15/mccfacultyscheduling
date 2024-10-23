@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 include('db_connect.php');
@@ -117,96 +118,117 @@ $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
             </div>
             <!-- Table Panel -->
 
-          <!-- Modal -->
-<div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="subjectModalLabel">Subject Form</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <!-- Modal -->
+            <div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="subjectModalLabel">Subject Form</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form action="" id="manage-subject">
+                            <div class="modal-body">
+                            <input type="hidden" name="id">
+                            <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>"> <!-- Hidden dept_id input -->
+    
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label class="control-label">Subject</label>
+                                        <input type="text" class="form-control" name="subject">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label class="control-label">Description</label>
+                                        <textarea class="form-control" cols="30" rows='3' name="description"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label class="control-label">Total Units</label>
+                                        <input type="text" class="form-control" name="units">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label class="control-label">Lec Units</label>
+                                        <input type="text" class="form-control" name="lec_units">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label class="control-label">Lab Units</label>
+                                        <input type="text" class="form-control" name="lab_units">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label class="control-label">Hours</label>
+                                        <input type="text" class="form-control" name="hours">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label for="course" class="control-label">Course</label>
+                                        <select class="form-control" name="course" id="course" required>
+                                            <option value="0" disabled selected>Select Course</option>
+                                            <?php 
+                                                $sql = "SELECT * FROM courses";
+                                                $query = $conn->query($sql);
+                                                while($row= $query->fetch_array()):
+                                                    $course = $row['course'];
+                                                ?>
+                                            <option value="<?php echo  $course ?>"><?php echo ucwords($course) ?></option>
+                                            <?php endwhile; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label for="cyear" class="control-label">Year</label>
+                                        <select class="form-control" name="cyear" id="cyear">
+                                            <option value="" disabled selected>Select Year</option>
+                                            <option value="1st">1st</option>
+                                            <option value="2nd">2nd</option>
+                                            <option value="3rd">3rd</option>
+                                            <option value="4th">4th</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label for="semester" class="control-label">Semester</label>
+                                        <select class="form-control" name="semester" id="semester">
+                                            <option value="" disabled selected>Select Semester</option>
+                                            <option value="1st">1st</option>
+                                            <option value="2nd">2nd</option>
+                                            <option value="3nd">Summer</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label for="specialization" class="control-label">Specialization</label>
+                                        <select class="form-control" name="specialization" id="specialization">
+                                            <option value="" disabled selected>Select Specialization</option>
+                                            <option value="Major">Major</option>
+                                            <option value="Minor">Minor</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                               
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <form action="" id="manage-subject">
-                <div class="modal-body">
-                    <input type="hidden" name="id">
-                    <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>"> 
-
-                    <div class="form-group">
-                        <label class="control-label">Subject</label>
-                        <input type="text" class="form-control" name="subject" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Description</label>
-                        <textarea class="form-control" cols="30" rows='3' name="description" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Total Units</label>
-                        <input type="number" class="form-control" name="units" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Lec Units</label>
-                        <input type="number" class="form-control" name="lec_units" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Lab Units</label>
-                        <input type="number" class="form-control" name="lab_units" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Hours</label>
-                        <input type="number" class="form-control" name="hours" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="course" class="control-label">Course</label>
-                        <select class="form-control" name="course" id="course" required>
-                            <option value="" disabled selected>Select Course</option>
-                            <?php 
-                                $sql = "SELECT * FROM courses";
-                                $query = $conn->query($sql);
-                                while($row = $query->fetch_array()):
-                            ?>
-                                <option value="<?php echo $row['course']; ?>">
-                                    <?php echo ucwords($row['course']); ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Year</label>
-                        <select class="form-control" name="cyear" required>
-                            <option value="" disabled selected>Select Year</option>
-                            <option value="1st">1st</option>
-                            <option value="2nd">2nd</option>
-                            <option value="3rd">3rd</option>
-                            <option value="4th">4th</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Semester</label>
-                        <select class="form-control" name="semester" required>
-                            <option value="" disabled selected>Select Semester</option>
-                            <option value="1st">1st Semester</option>
-                            <option value="2nd">2nd Semester</option>
-                            <option value="Summer">Summer</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Specialization</label>
-                        <select class="form-control" name="specialization" required>
-                            <option value="" disabled selected>Select Specialization</option>
-                            <option value="Major">Major</option>
-                            <option value="Minor">Minor</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary save-btn">
-                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                        Save
-                    </button>
-                </div>
-            </form>
+            <!-- Modal -->
         </div>
     </div>
 </div>
@@ -216,49 +238,62 @@ $(document).ready(function() {
     // Initialize DataTable
     $('#subjectTable').DataTable();
 
-    // Handle form submission
+    // Add new subject
     $('#manage-subject').submit(function(e) {
         e.preventDefault();
+        
+        // Basic input validation
+        var subject = $('[name="subject"]').val().trim();
+        var description = $('[name="description"]').val().trim();
+        var units = $('[name="units"]').val().trim();
+        var lec_units = $('[name="lec_units"]').val().trim();
+        var lab_units = $('[name="lab_units"]').val().trim();
+        var hours = $('[name="hours"]').val().trim();
+        var course = $('[name="course"]').val();
+        var cyear = $('[name="cyear"]').val();
+        var semester = $('[name="semester"]').val();
+        var specialization = $('[name="specialization"]').val();
 
-        // Disable the save button and show loading indicator
-        let saveBtn = $('.save-btn');
-        saveBtn.prop('disabled', true);
-        saveBtn.find('.spinner-border').removeClass('d-none');
+        if (!subject || !course || !cyear || !semester) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please fill in all required fields!',
+            });
+            return;
+        }
 
         $.ajax({
             url: 'ajax.php?action=save_subject',
-            data: new FormData(this),
+            data: new FormData($(this)[0]),
             method: 'POST',
             processData: false,
             contentType: false,
             success: function(resp) {
-                saveBtn.prop('disabled', false);
-                saveBtn.find('.spinner-border').addClass('d-none');
-
                 if (resp == 1) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Subject successfully saved!',
-                    }).then(() => {
-                        $('#subjectModal').modal('hide');
-                        location.reload(); // Reload page after success
+                        showConfirmButton: true,
+                        
+                    }).then((result) => {
+                        if (result.dismiss === Swal.DismissReason.timer) {
+                            location.reload();
+                        }
                     });
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error saving subject!',
-                        text: resp // Display the server response if an error occurs
+                        text: resp // Display the server response in case of error
                     });
                 }
             },
             error: function() {
-                saveBtn.prop('disabled', false);
-                saveBtn.find('.spinner-border').addClass('d-none');
-
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Something went wrong with the AJAX request!'
+                    text: 'Something went wrong with the AJAX request!',
                 });
             }
         });
@@ -266,26 +301,26 @@ $(document).ready(function() {
 
     // Edit subject
     $('.edit_subject').click(function() {
-        let form = $('#manage-subject');
-        form.find('[name="id"]').val($(this).data('id'));
-        form.find('[name="subject"]').val($(this).data('subject'));
-        form.find('[name="description"]').val($(this).data('description'));
-        form.find('[name="units"]').val($(this).data('units'));
-        form.find('[name="lec_units"]').val($(this).data('lecunits'));
-        form.find('[name="lab_units"]').val($(this).data('labunits'));
-        form.find('[name="course"]').val($(this).data('course'));
-        form.find('[name="cyear"]').val($(this).data('year'));
-        form.find('[name="semester"]').val($(this).data('semester'));
-        form.find('[name="specialization"]').val($(this).data('special'));
-        form.find('[name="hours"]').val($(this).data('hours'));
+        var form = $('#manage-subject');
+        form.find("[name='id']").val($(this).data('id'));
+        form.find("[name='subject']").val($(this).data('subject'));
+        form.find("[name='description']").val($(this).data('description'));
+        form.find("[name='units']").val($(this).data('units'));
+        form.find("[name='lec_units']").val($(this).data('lecunits'));
+        form.find("[name='lab_units']").val($(this).data('labunits'));
+        form.find("[name='course']").val($(this).data('course'));
+        form.find("[name='cyear']").val($(this).data('year'));
+        form.find("[name='semester']").val($(this).data('semester'));
+        form.find("[name='specialization']").val($(this).data('special'));
+        form.find("[name='hours']").val($(this).data('hours'));
     });
 
     // Delete subject
     $('.delete_subject').click(function() {
-        let id = $(this).data('id');
+        var id = $(this).data('id');
         Swal.fire({
-            title: 'Are you sure?',
-            text: "This action cannot be undone!",
+            title: 'Are you sure you want to delete this subject?',
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -299,8 +334,15 @@ $(document).ready(function() {
                     data: { id: id },
                     success: function(resp) {
                         if (resp == 1) {
-                            Swal.fire('Deleted!', 'Subject has been deleted.', 'success').then(() => {
-                                location.reload();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Subject successfully deleted!',
+                                showConfirmButton: true,
+                             
+                            }).then((result) => {
+                                if (result.dismiss === Swal.DismissReason.timer) {
+                                    location.reload();
+                                }
                             });
                         }
                     }
@@ -308,5 +350,28 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Filter functionality
+    $('#filter-course, #filter-semester').change(function() {
+        var courseFilter = $('#filter-course').val().toLowerCase();
+        var semesterFilter = $('#filter-semester').val().toLowerCase();
+
+        $('.subject-row').each(function() {
+            var course = $(this).data('course').toLowerCase();
+            var semester = $(this).data('semester').toLowerCase();
+            var show = true;
+
+            if (courseFilter && course !== courseFilter) {
+                show = false;
+            }
+
+            if (semesterFilter && semester !== semesterFilter) {
+                show = false;
+            }
+
+            $(this).toggle(show);
+        });
+    });
 });
+
 </script>
