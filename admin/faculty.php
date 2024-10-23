@@ -20,7 +20,6 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
 
 <div class="container-fluid" style="margin-left: 1%;">
     <style>
-        /* Custom styles for checkbox and container */
         input[type=checkbox] {
             transform: scale(1.5);
             padding: 10px;
@@ -39,8 +38,6 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
             max-width: 100px;
             max-height: 150px;
         }
-
-        /* Responsive adjustments */
         @media (max-width: 768px) {
             .table td, .table th {
                 white-space: nowrap;
@@ -52,9 +49,8 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
         }
     </style>
 
-    <div class="col-lg-14"  style="margin-top:100px; margin-left:-1%;">
+    <div class="col-lg-14" style="margin-top:100px; margin-left:-1%;">
         <div class="row">
-            <!-- Table Panel -->
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -87,23 +83,15 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                                 <tbody>
                                     <?php 
                                     $i = 1;
-                                    $faculty = $conn->query("SELECT *, concat(lastname, ', ', firstname, ' ', middlename) as name FROM faculty WHERE dept_id = '$dept_id' ORDER BY concat(lastname, ', ', firstname, ' ', middlename) ASC");
+                                    $faculty = $conn->query("SELECT *, concat(lastname, ', ', firstname, ' ', middlename) as name FROM faculty WHERE dept_id = '$dept_id' ORDER BY name ASC");
                                     while($row=$faculty->fetch_assoc()):
                                     ?>
                                     <tr>
                                         <td class="text-center"><?php echo $i++ ?></td>
-                                        <td>
-                                             <p><b><?php echo $row['id_no'] ?></b></p>
-                                        </td>
-                                        <td>
-                                             <p><b><?php echo ucwords($row['name']) ?></b></p>
-                                        </td>
-                                        <td>
-                                             <p><b><?php echo $row['email'] ?></b></p>
-                                        </td>
-                                        <td class="text-right">
-                                             <p><b><?php echo $row['contact'] ?></b></p>
-                                        </td>
+                                        <td><p><b><?php echo $row['id_no'] ?></b></p></td>
+                                        <td><p><b><?php echo ucwords($row['name']) ?></b></p></td>
+                                        <td><p><b><?php echo $row['email'] ?></b></p></td>
+                                        <td class="text-right"><p><b><?php echo $row['contact'] ?></b></p></td>
                                         <td class="text-center">
                                             <button class="btn btn-sm btn-info view_faculty" type="button" data-id="<?php echo $row['id'] ?>">
                                                 <i class="fa fa-eye"></i>
@@ -123,7 +111,6 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                     </div>
                 </div>
             </div>
-            <!-- Table Panel -->
         </div>
     </div>    
 </div>
@@ -139,9 +126,18 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
                 </button>
             </div>
             <div class="modal-body">
-            <form action="" id="manage-section">
-            <input type="hidden" name="id">
-            <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
+                <form action="" id="manage-section">
+                    <input type="hidden" name="id">
+                    <input type="hidden" name="dept_id" value="<?php echo $dept_id; ?>">
+                    <div class="form-group">
+                        <label for="name">Faculty Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success">Save</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -149,33 +145,24 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
 
 <script>
     $(document).ready(function(){
-        // Initialize DataTables
         $('#facultyTable').DataTable();
 
-        // New Faculty Button
         $('#new_faculty').click(function(){
-            console.log("New Faculty button clicked");
             uni_modal("New Entry", "manage_faculty.php", 'mid-large');
         });
 
-        // View Faculty Button
         $('.view_faculty').click(function(){
             const id = $(this).data('id');
-            console.log("View Faculty button clicked, ID: " + id);
             uni_modal("Faculty Details", "view_faculty.php?id=" + id, '');
         });
 
-        // Edit Faculty Button
         $('.edit_faculty').click(function(){
             const id = $(this).data('id');
-            console.log("Edit Faculty button clicked, ID: " + id);
             uni_modal("Manage Faculty", "manage_faculty.php?id=" + id, 'mid-large');
         });
 
-        // Delete Faculty Button
         $('.delete_faculty').click(function(){
             const id = $(this).data('id');
-            console.log("Delete Faculty button clicked, ID: " + id);
             Swal.fire({
                 title: 'Are you sure?',
                 text: 'You will not be able to recover this data!',
@@ -191,60 +178,33 @@ $dept_id = isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : null;
             });
         });
 
-        // Function to delete faculty
         function delete_faculty(id){
-            console.log("Deleting faculty, ID: " + id);
             $.ajax({
                 url: 'ajax.php?action=delete_faculty',
                 method: 'POST',
                 data: { id: id },
                 success: function(response){
-                    console.log("Delete response: " + response);
                     if(response == 1){
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Deleted!',
-                            text: 'Faculty data successfully deleted.',
-                            showConfirmButton: true,
-                        }).then(function() {
-                            location.reload(); // Reload the page to reflect changes
-                        });
+                        Swal.fire('Deleted!', 'Faculty data successfully deleted.', 'success')
+                        .then(() => location.reload());
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: 'Something went wrong!',
-                        });
+                        Swal.fire('Oops...', 'Something went wrong!', 'error');
                     }
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("AJAX error: " + textStatus + ' : ' + errorThrown);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Something went wrong with the request!',
-                    });
+                error: function(){
+                    Swal.fire('Oops...', 'Request failed!', 'error');
                 }
             });
         }
 
-        // Function to open a modal
         function uni_modal(title, url, size = ''){
             $.ajax({
                 url: url,
-                error: function(){
-                    console.error("An error occurred while loading the modal content.");
-                    alert("An error occurred!");
-                },
                 success: function(resp){
                     if(resp){
                         $('#uni_modal .modal-title').html(title);
                         $('#uni_modal .modal-body').html(resp);
-                        if(size != ''){
-                            $('#uni_modal .modal-dialog').addClass(size);
-                        }else{
-                            $('#uni_modal .modal-dialog').removeAttr("class").addClass("modal-dialog modal-md");
-                        }
+                        $('#uni_modal .modal-dialog').attr('class', 'modal-dialog ' + size);
                         $('#uni_modal').modal('show');
                     }
                 }
