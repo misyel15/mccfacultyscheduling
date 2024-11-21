@@ -1,46 +1,4 @@
-<?php 
-include('db_connect.php');
 
-// Handle the AJAX request to fetch schedule data
-if (isset($_POST['room_id'])) {
-    $room_id = $_POST['room_id'];
-
-    // Fetch schedule based on room_id
-    $stmt = $conn->prepare("SELECT * FROM loading WHERE rooms = ? ORDER BY timeslot ASC");
-    $stmt->bind_param("i", $room_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $output = '';
-        while ($row = $result->fetch_assoc()) {
-            $time = htmlspecialchars($row['timeslot']);
-            $monday = isset($row['course']) ? htmlspecialchars($row['course']) : '';
-            $tuesday = isset($row['Tuesday']) ? htmlspecialchars($row['Tuesday']) : '';
-            $wednesday = isset($row['Wednesday']) ? htmlspecialchars($row['Wednesday']) : '';
-            $thursday = isset($row['Thursday']) ? htmlspecialchars($row['Thursday']) : '';
-            $friday = isset($row['Friday']) ? htmlspecialchars($row['Friday']) : '';
-            $saturday = isset($row['Saturday']) ? htmlspecialchars($row['Saturday']) : '';
-
-            // Append rows with the sub-descriptions for each day
-            $output .= '<tr>
-                <td class="text-center">' . $time . '</td>
-                <td class="text-center">' . $monday . '</td>
-                <td class="text-center">' . $tuesday . '</td>
-                <td class="text-center">' . $wednesday . '</td>
-                <td class="text-center">' . $thursday . '</td>
-                <td class="text-center">' . $friday . '</td>
-                <td class="text-center">' . $saturday . '</td>
-            </tr>';
-        }
-        echo $output;
-    } else {
-        echo '<tr><td colspan="7" class="text-center">No schedule found.</td></tr>';
-    }
-    $stmt->close();
-    exit();
-}
-?>
 
 <?php
 session_start();
@@ -48,116 +6,185 @@ include('db_connect.php');
 include 'includes/header.php';
 
 // Assuming you store the department ID in the session during login
-// Example: $_SESSION['dept_id'] = $user['dept_id'];
 $dept_id = $_SESSION['dept_id']; // Get the department ID from the session
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Schedule Load</title>
-    <style>
-        @media (max-width: 768px) {
-            .card-header {
-                text-align: center;
-            }
-            .table thead th {
-                font-size: 12px;
-            }
-            .table td {
-                font-size: 12px;
-            }
-            .modal-dialog {
-                max-width: 90%;
-                margin: 1.75rem auto;
-            }
-        }
-        td {
-            vertical-align: middle !important;
-        }
-    </style>
-</head>
-<body>
-<div class="container-fluid" style="margin-top:100px;">
-    <!-- Table Panel -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <center><h3>Room Schedule's Load</h3></center>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <label for="" class="control-label col-md-2 offset-md-2">View Loads of:</label>
-                        <div class="col-md-4">
-                            <select name="room_name" id="room_name" class="custom-select select2" onchange="fetchRoomSchedule(this.value)">
-                                <option value="">Select Room</option>
-                                <?php
-                                $stmt = $conn->prepare("SELECT id, room_name FROM roomlist ORDER BY id ASC");
-                                $stmt->execute();
-                                $result = $stmt->get_result();
 
-                                if ($result) {
+// Get the selected room from the POST request
+$selected_room = isset($_POST['selected_room']) ? $_POST['selected_room'] : '';
+?>
+<div class="container-fluid" style="margin-top:100px; margin-left:-15px;">
+    <div class="container-fluid mt-5">
+        <!-- Table Panel for Monday/Wednesday -->
+        <div class="card mb-4">
+            <div class="card-header text-center">
+                <h3>Room Schedule</h3>
+                <div class="d-flex justify-content-end">
+                    <!-- Print Button -->
+                    <a href="print_schedule.php?selected_room=<?php echo urlencode($selected_room); ?>" class="btn btn-secondary" target="_blank">Print Schedule</a>
+                </div>
+                <form method="POST" class="form-inline mt-2" id="filterForm" action="">
+                    <select name="selected_room" class="form-control mr-2">
+                        <option value="">Select Room</option>
+                        <?php
+                        // Fetch the list of rooms to populate the dropdown
+                        $roomsdata = $conn->prepare("SELECT * FROM roomlist WHERE dept_id = ? ORDER BY room_id");
+                        $roomsdata->bind_param('i', $dept_id);
+                        $roomsdata->execute();
+                        $result = $roomsdata->get_result();
+                        while ($r = $result->fetch_assoc()) {
+                            echo '<option value="' . htmlspecialchars($r['room_name']) . '"' . ($selected_room === htmlspecialchars($r['room_name']) ? ' selected' : '') . '>' . htmlspecialchars($r['room_name']) . '</option>';
+                        }
+                        ?>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <button type="reset" class="btn btn-secondary ml-2" onclick="document.getElementById('filterForm').reset();">Reset</button>
+                </form>
+            </div>
+            <div class="card-body">
+            <h4>Monday/Wednesday</h4>
+                <table class="table table-bordered waffle no-grid" id="insloadtable">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Time</th>
+                            <?php
+                            // Fetching room names for headers
+                            $rooms = [];
+                            $roomsdata = $conn->prepare("SELECT * FROM roomlist WHERE dept_id = ? ORDER BY room_id");
+                            $roomsdata->bind_param('i', $dept_id);
+                            $roomsdata->execute();
+                            $result = $roomsdata->get_result();
+                            while ($r = $result->fetch_assoc()) {
+                                $rooms[] = $r['room_name'];
+                            }
+                            foreach ($rooms as $room) {
+                                echo '<th class="text-center">' . htmlspecialchars($room) . '</th>';
+                            }
+                            ?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $times = array();
+                        $timesdata = $conn->query("SELECT * FROM timeslot WHERE schedule='MW' AND dept_id = '$dept_id' order by time_id;");
+                        while ($t = $timesdata->fetch_assoc()) {
+                            $times[] = $t['timeslot'];
+                        }
+
+                        foreach ($times as $time) {
+                            echo "<tr><td>" . htmlspecialchars($time) . "</td>"; // Escape time
+                            foreach ($rooms as $room) {
+                                // Check if a specific room is selected for filtering
+                                if ($selected_room && $room !== $selected_room) {
+                                    echo "<td></td>"; // Skip displaying for non-selected rooms
+                                    continue;
+                                }
+
+                                // Prepare statement to fetch loading data
+                                $query = "SELECT * FROM loading WHERE timeslot='" . mysqli_real_escape_string($conn, $time) . "' AND room_name='" . mysqli_real_escape_string($conn, $room) . "' AND days='MW'";
+                                $result = mysqli_query($conn, $query);
+                                if ($result->num_rows > 0) {
                                     while ($row = $result->fetch_assoc()) {
-                                        echo '<option value="' . htmlspecialchars($row['id']) . '">' . ucwords(htmlspecialchars($row['room_name'])) . '</option>';
+                                        $course = htmlspecialchars($row['course']);
+                                        $subject = htmlspecialchars($row['subjects']);
+                                        $faculty = htmlspecialchars($row['faculty']);
+                                        $load_id = $row['id'];
+                                        $scheds = "$subject $course";
+                                        
+                                        // Fetching faculty name
+                                        $faculty_stmt = $conn->prepare("SELECT CONCAT(lastname, ', ', firstname, ' ', middlename) AS name FROM faculty WHERE id=?");
+                                        $faculty_stmt->bind_param('i', $faculty);
+                                        $faculty_stmt->execute();
+                                        $faculty_name_result = $faculty_stmt->get_result();
+                                        $faculty_name = $faculty_name_result->fetch_assoc()['name'] ?? 'Unknown Faculty'; // Fallback if no faculty found
+                                        
+                                        $newSched = htmlspecialchars($scheds . " " . $faculty_name);
+                                        echo '<td class="text-center content" data-id="' . htmlspecialchars($load_id) . '" data-scode="' . htmlspecialchars($subject) . '">' 
+                                            . $newSched 
+                                            . '<br>' 
+                                            . '</td>';
                                     }
                                 } else {
-                                    echo 'Error: ' . $conn->error;
+                                    echo "<td></td>"; // No data found for this room and time
                                 }
-                                $stmt->close();
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-                    <br>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover" id="insloadtable">
-                            <thead>
-                                <tr>
-                                    <th class="text-center" width="100px">Time</th>
-                                    <th class="text-center">Monday</th>
-                                    <th class="text-center">Tuesday</th>
-                                    <th class="text-center">Wednesday</th>
-                                    <th class="text-center">Thursday</th>
-                                    <th class="text-center">Friday</th>
-                                    <th class="text-center">Saturday</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Schedule data will be inserted here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            }
+                            echo "</tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-body">
+            <h4>Tuesday/Thursday</h4>
+                <table class="table table-bordered waffle no-grid" id="insloadtable">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Time</th>
+                            <?php
+                            // Fetching room names for headers
+                            $rooms = [];
+                            $roomsdata = $conn->prepare("SELECT * FROM roomlist WHERE dept_id = ? ORDER BY room_id");
+                            $roomsdata->bind_param('i', $dept_id);
+                            $roomsdata->execute();
+                            $result = $roomsdata->get_result();
+                            while ($r = $result->fetch_assoc()) {
+                                $rooms[] = $r['room_name'];
+                            }
+                            foreach ($rooms as $room) {
+                                echo '<th class="text-center">' . htmlspecialchars($room) . '</th>';
+                            }
+                            ?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $times = array();
+                        $timesdata = $conn->query("SELECT * FROM timeslot WHERE schedule='TTH' AND dept_id = '$dept_id' order by time_id;");
+                        while ($t = $timesdata->fetch_assoc()) {
+                            $times[] = $t['timeslot'];
+                        }
+
+                        foreach ($times as $time) {
+                            echo "<tr><td>" . htmlspecialchars($time) . "</td>"; // Escape time
+                            foreach ($rooms as $room) {
+                                // Check if a specific room is selected for filtering
+                                if ($selected_room && $room !== $selected_room) {
+                                    echo "<td></td>"; // Skip displaying for non-selected rooms
+                                    continue;
+                                }
+
+                                // Prepare statement to fetch loading data
+                                $query = "SELECT * FROM loading WHERE timeslot='" . mysqli_real_escape_string($conn, $time) . "' AND room_name='" . mysqli_real_escape_string($conn, $room) . "' AND days='TTH'";
+                                $result = mysqli_query($conn, $query);
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        $course = htmlspecialchars($row['course']);
+                                        $subject = htmlspecialchars($row['subjects']);
+                                        $faculty = htmlspecialchars($row['faculty']);
+                                        $load_id = $row['id'];
+                                        $scheds = "$subject $course";
+                                        
+                                        // Fetching faculty name
+                                        $faculty_stmt = $conn->prepare("SELECT CONCAT(lastname, ', ', firstname, ' ', middlename) AS name FROM faculty WHERE id=?");
+                                        $faculty_stmt->bind_param('i', $faculty);
+                                        $faculty_stmt->execute();
+                                        $faculty_name_result = $faculty_stmt->get_result();
+                                        $faculty_name = $faculty_name_result->fetch_assoc()['name'] ?? 'Unknown Faculty'; // Fallback if no faculty found
+                                        
+                                        $newSched = htmlspecialchars($scheds . " " . $faculty_name);
+                                        echo '<td class="text-center content" data-id="' . htmlspecialchars($load_id) . '" data-scode="' . htmlspecialchars($subject) . '">' 
+                                            . $newSched 
+                                            . '<br>' 
+                                            . '</td>';
+                                    }
+                                } else {
+                                    echo "<td></td>"; // No data found for this room and time
+                                }
+                            }
+                            echo "</tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Include jQuery, Bootstrap JS, and your custom JS -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<script>
-function fetchRoomSchedule(roomId) {
-    if(roomId) {
-        $.ajax({
-            url: '', // Current page
-            type: 'POST',
-            data: { room_id: roomId },
-            success: function(response) {
-                $('#insloadtable tbody').html(response); // Update table body with response data
-            },
-            error: function(xhr, status, error) {
-                console.log('Error: ' + error);
-            }
-        });
-    } else {
-        $('#insloadtable tbody').html(''); // Clear table if no room is selected
-    }
-}
-</script>
-</body>
-</html>
